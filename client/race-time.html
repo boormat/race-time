@@ -1,0 +1,75 @@
+<head>
+	<title>race-time</title>
+</head>
+
+<body>
+	{{> events}}
+	{{> event}}
+	{{> results}}
+</body>
+
+<template name="event">
+<div>
+	    {{#if show }}
+		<h1>{{event.name}}</h1>
+		<ul>
+		<li>Results</li>
+		<li>Stages</li>
+		<li>Entrants</li>
+		</ul>
+	    {{/if}}
+</div>
+</template>
+
+
+<template name="results">
+<div>
+    {{#if show }}
+	<h2>Results</h2>
+	<table>
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Entrant</th>
+				<th>Pos</th> 
+				{{#each stages }}
+					<th>{{name}}</th>
+				{{/each}}
+				<th>Total</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each results }}
+				<tr>A result
+					<td>{{number}}</td>
+					<th>{{name}}</th>
+					<td>{{position}}</td>
+					{{#each scores}}
+						<td>{{score}}</td>
+					{{/each}}
+					<td>{{total}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+    {{/if}}
+</template>
+
+
+<template name="events">
+	<div class="leaderboard">
+	    {{#if show }}
+			<p>Select your event.</p>
+			<ul> 
+			{{#each events}}
+				{{>event_picker}}
+			{{/each}}
+			</ul>
+	    {{/if}}
+	</div>
+</template>
+
+<template name="event_picker">
+	<li class="a">{{name}}</li>
+</template>
+	
