@@ -1,15 +1,16 @@
 ////////////////////////////////////////
-// Event results page
+// Race results page
 
 //// basic routing
 Template.results.show = function () {
-	  return !! rtevent();
+	  return !! race();
 };
 
 Template.results.events({
 	'click h1': function () {
 		Meteor._debug('unclick');
-		Session.set('event_id', null);
+		Session.set('race_id', null);
+		goTo("pickRace");
 	}
 });
 

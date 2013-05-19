@@ -3,7 +3,26 @@
 </head>
 
 <body>
-	{{> events}}
-	{{> results}}
+  	<div class="container">
+	{{> page}}
+	</div>
 </body>
 
+
+<template name="page">
+    {{> errors}}
+    
+	{{#if showRaceSubmit}}
+    	{{> raceSubmit}}
+  	{{/if}}
+
+	{{#if showRacePicker}}
+		{{> racePicker}}
+  	{{/if}}
+
+	{{#if showResults}}
+		{{> results}}
+  	{{/if}}
+
+	
+</template>

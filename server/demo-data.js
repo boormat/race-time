@@ -23,9 +23,9 @@ function sleep(ms) {
 }
 
 
-// run at server startup to load some demo events (no results)
+// run at server startup to load some demo races (no results)
 function demo_data() {
-	if (Events.find().count() < 2) {
+	if (Races.find().count() < 2) {
 		var data = [
 		            {
 		            	name: "Hyles1",
@@ -54,13 +54,13 @@ function demo_data() {
 
 		Meteor._debug("loding data ");
 		for (var i = 0; i < data.length; i++) {
-			var event_id = Events.insert({name: data[i].name});
-			Meteor._debug("add event ", data[i].name);
+			var race_id = Races.insert({name: data[i].name});
+			Meteor._debug("add race ", data[i].name);
 
 			for (var j = 0; j < data[i].tests.length; j++) {
 				var info = data[i].tests[j];
 				Meteor._debug("add stage ", info[0]);
-				Stages.insert({event_id: event_id,
+				Stages.insert({race_id: race_id,
 					number: j+1,
 					name: info[0]});
 			}
@@ -68,7 +68,7 @@ function demo_data() {
 			for (var j = 0; j < data[i].entrants.length; j++) {
 				var info = data[i].entrants[j];
 				Meteor._debug("add entrant ", info[0]);
-				Entrants.insert({event_id: event_id,
+				Entrants.insert({race_id: race_id,
 					number: j + 1,
 					name: info[0]});
 			}
@@ -78,7 +78,7 @@ function demo_data() {
     Meteor.setTimeout(addResults, 1000);
 };
 
-// Adds a random result to the demo events.  Do not run on prod!
+// Adds a random result to the demo races.  Do not run on prod!
 function addResults()
 {
 	// Using forEach callbacks is probably more efficient
@@ -100,21 +100,21 @@ function addResults()
 	
 	Meteor._debug("addResults ");
 	Meteor._debug("status", Meteor.default_server.sessions, meh );
-	events = Events.find().fetch();
-	for (ev in events){
-		event = events[ev];
-	  	stages = Stages.find({event_id:event._id}).fetch();
+	var races = Races.find().fetch();
+	for (ev in races){
+		var race = races[ev];
+	  	var stages = Stages.find({race_id:race._id}).fetch();
 	  	for(s in stages){
 			stage = stages[s];
-	      	entrants = Entrants.find({event_id:event._id}).fetch();
+	      	entrants = Entrants.find({race_id:race._id}).fetch();
 	      	for(en in entrants){
 	      		entrant = entrants[en];
-				score = Scores.findOne({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id});
-//				Meteor._debug("score ", event, stage, entrant, score);
+				score = Scores.findOne({race_id:race._id, stage_id:stage._id, entrant_id:entrant._id});
+//				Meteor._debug("score ", race, stage, entrant, score);
 				
 				if (!score ){
 					Meteor._debug("add score ");
-					s = Scores.insert({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id,
+					s = Scores.insert({race_id:race._id, stage_id:stage._id, entrant_id:entrant._id,
 						score: Math.floor(Random.fraction()*10)*5});
 
 //					Meteor._debug(Scores.findOne(s));

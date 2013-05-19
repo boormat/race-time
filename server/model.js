@@ -2,14 +2,14 @@
 //Loaded on both the client and the server
 
 ///////////////////////////////////////////////////////////////////////////////
-// Events
-Events = new Meteor.Collection("events");
+// Races
+Races = new Meteor.Collection("races");
 
-// Stage / Test / Heat(?)  are per event.
-// Note sure how to represent just yet (Can use nested Lists and Maps in the event Say)
+// Stage / Test / Heat(?)  are per race.
+// Note sure how to represent just yet (Can use nested Lists and Maps in the race Say)
 // But we do want a Score to be per Stage, so want a Stage Id?  Or do we just count em?
 // See Parties rsvps for example showing manipulating the sub entry.  Might also impact 
-// the update/callbacks (ie update an 'event' Vs updating a single stage?)
+// the update/callbacks (ie update an 'race' Vs updating a single stage?)
 Stages =  new Meteor.Collection("stages");
 
 Entrants = new Meteor.Collection("entrants");
@@ -21,7 +21,7 @@ Entrants = new Meteor.Collection("entrants");
  Run vs Score (best of...)?
 
 score = {
-event_id: string,
+race_id: string,
 stage_id: string,
 run       integer, from 1.
 time

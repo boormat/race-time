@@ -1,0 +1,15 @@
+<template name="racePicker">
+	<div>
+		<p>Select your race.</p>
+		<ul> 
+		{{#each raceList}}
+			{{>racePickerItem}}
+		{{/each}}
+		</ul>
+	    <button type="button" class="newRace btn btn-primary">Create Race</button>
+	</div>
+</template>
+
+<template name="racePickerItem">
+	<li class="pickRace"><a href="#">{{name}}</a></li>
+</template>
