@@ -13,15 +13,15 @@ Scores = new Meteor.Collection("scores");
 // global helpers + data
 // WARNING do not use event as a global name, it collides confusingly
 // with a javascript/meteor(?) event.
-race = function race() {
+race = function raceF() {
 	  return Races.findOne(Session.get('race_id'));
 };
 
-stages = function stages() {
+stages = function stagesF() {
 	  return Stages.find({race_id:Session.get('race_id')});
 };
 
-entrants = function entrants() {
+entrants = function entrantsF() {
 	  return Entrants.find({race_id:Session.get('race_id')});
 };
 
@@ -38,7 +38,7 @@ Template.page.showRacePicker = function(){
 	return !Session.get('page') || Session.get('page') === "pickRace";
 };
 
-goTo = function goTo(pageName){
+goTo = function goToF(pageName){
 	//TODO check is valid... or use a router!
 	return Session.set('page', pageName);
 };

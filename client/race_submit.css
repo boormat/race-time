@@ -1,0 +1,74 @@
+#new-todo-box {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 60px;
+    margin-right: 20px;
+    font-size: 160%;
+    position: relative;
+    height: 40px;
+}
+
+#new-todo {
+   position: absolute;
+   width: 100%;
+}
+
+#items-view {
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+#item-list .todo {
+    display: block;
+    height: 50px;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid #ccc;
+}
+
+#item-list .todo .destroy {
+    cursor: pointer;
+    position: absolute;
+    left: 5px;
+    top: 15px;
+    height: 20px;
+    width: 20px;
+}
+
+#item-list .todo .display, #item-list .todo .edit {
+    margin-left: 30px;
+    height: 100%;
+    width: auto;
+    float: left;
+    padding-top: 18px;
+    line-height: 1;
+}
+
+#todo-input {
+    width: 300px;
+    position: relative;
+    top: -3px;
+}
+
+#item-list .done .todo-text {
+    text-decoration: line-through;
+    color: #999;
+}
+
+#item-list .todo:hover .destroy {
+    background: url('/destroy.png') no-repeat 0 0;
+}
+
+#item-list .todo .destroy:hover {
+    background-position: 0 -20px;
+}
+
+#item-list .todo .todo-text {
+    float: left;
+    margin-left: 10px;
+    font-size: 100%;
+}
+
+#item-list .todo .edit input {
+    margin-left: 35px;
+}

@@ -1,19 +1,51 @@
 <template name="raceSubmit">
 <div>
-	<h2>{{meh}}</h2>
 	<div class="control-group">
 		<label class="control-label" for="name">Race Name</label>
 		<div class="controls">
 			<input name="name" type="text" value="" placeholder="Race Name" />
 		</div>
 	</div>
+	<h3>Stages</h3>
+	{{>todos}}
 
 	<div class="control-group">
 		<div class="controls">
 			<input type="button" value="Add Race" class="save btn btn-primary" />
 			<input type="button" value="Cancel" class="cancel btn" />
+			<input type="button" value="Clear" class="clear btn" />
 		    <button type="button" class="close cancel">&times;</button>
 		</div>
 	</div>
 </div>
+</template>
+
+
+
+<template name="todos">
+	<div id="items-view">
+	    <ul id="item-list">
+	      {{#each todos}}
+	        {{> todo_item}}
+	      {{/each}}
+	    <div id="new-todo-box">
+	      <input type="text" id="new-todo" placeholder="Stage Name" />
+	    </div>
+	    </ul>
+	</div>
+</template>
+
+<template name="todo_item">
+	<li class="todo {{done_class}}">
+	{{#if editing}}
+		<div class="edit">
+			<input id="todo-input" type="text" value="{{text}}" />
+		</div> 
+	{{else}}
+		<div class="destroy"></div>
+		<div class="display">
+			<div class="todo-text">{{text}}</div>
+		</div>
+	{{/if}}
+	</li>
 </template>
