@@ -52,7 +52,7 @@ if (Meteor.isServer) {
 		//get server time in milliseconds
 		getServerTime: function () {
 			var _time = (new Date).getTime();
-			console.log(_time);
+			Meteor._debug(_time);
 			return _time;
 		}
 	});

@@ -22,10 +22,9 @@ function sleep(ms) {
     Fiber.yield();
 }
 
-function dog() {
-//	Events.remove({});
-//	Stages.remove({});
-//	Entrants.remove({});
+
+// run at server startup to load some demo events (no results)
+function demo_data() {
 	if (Events.find().count() < 2) {
 		var data = [
 		            {
@@ -53,15 +52,14 @@ function dog() {
 		            },
 		            ];
 
-//		var timestamp = (new Date()).getTime();
-		console.log("loding data ");
+		Meteor._debug("loding data ");
 		for (var i = 0; i < data.length; i++) {
 			var event_id = Events.insert({name: data[i].name});
-			console.log("add event ", data[i].name);
+			Meteor._debug("add event ", data[i].name);
 
 			for (var j = 0; j < data[i].tests.length; j++) {
 				var info = data[i].tests[j];
-				console.log("add stage ", info[0]);
+				Meteor._debug("add stage ", info[0]);
 				Stages.insert({event_id: event_id,
 					number: j+1,
 					name: info[0]});
@@ -69,28 +67,18 @@ function dog() {
 
 			for (var j = 0; j < data[i].entrants.length; j++) {
 				var info = data[i].entrants[j];
-				console.log("add entrant ", info[0]);
+				Meteor._debug("add entrant ", info[0]);
 				Entrants.insert({event_id: event_id,
 					number: j + 1,
 					name: info[0]});
 			}
-
-//			Stages.find({event_id:event_id}).forEach(function (stage){
-//			Entrants.find({event_id:event_id}).forEach(function (entrant) {
-//			console.log("add score ");
-//			s = Scores.insert({event_id:event_id, stage_id:stage._id, entrant_id:entrant._id,
-//			score: Math.floor(Random.fraction()*10)*5});
-//			console.log(Scores.findOne(s));
-////			sleep(1000);
-////			Fiber.current.sleep(1000);
-//			});
-//			});
 		}
 	}
 	
     Meteor.setTimeout(addResults, 1000);
 };
 
+// Adds a random result to the demo events.  Do not run on prod!
 function addResults()
 {
 	// Using forEach callbacks is probably more efficient
@@ -101,17 +89,17 @@ function addResults()
 	var meh = false;
 	for(s in Meteor.default_server.sessions ){
 		meh = true;
-		console.log("s", s);
+		Meteor._debug("s", s);
 	}
 	
 	if(!meh){
-		console.log("No clients so long sleep");
-	    Meteor.setTimeout(addResults, 60000);
+		Meteor._debug("No clients so long sleep");
+	    Meteor.setTimeout(addResults, 30000);
 	    return;
 	}
 	
-	console.log("addResults ");
-	console.log("status", Meteor.default_server.sessions, meh );
+	Meteor._debug("addResults ");
+	Meteor._debug("status", Meteor.default_server.sessions, meh );
 	events = Events.find().fetch();
 	for (ev in events){
 		event = events[ev];
@@ -122,14 +110,14 @@ function addResults()
 	      	for(en in entrants){
 	      		entrant = entrants[en];
 				score = Scores.findOne({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id});
-//				console.log("score ", event, stage, entrant, score);
+//				Meteor._debug("score ", event, stage, entrant, score);
 				
 				if (!score ){
-					console.log("add score ");
+					Meteor._debug("add score ");
 					s = Scores.insert({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id,
 						score: Math.floor(Random.fraction()*10)*5});
 
-//					console.log(Scores.findOne(s));
+//					Meteor._debug(Scores.findOne(s));
 					Meteor.setTimeout(addResults, 5000);
 					return;
 				}
@@ -137,43 +125,10 @@ function addResults()
 		};
 	};
 	
-	console.log("Score inserts DONE");
+	Meteor._debug("Score inserts DONE");
 	Scores.remove({});
 	Meteor.setTimeout(addResults, 10000);
 
 }
 
-//function addResults()
-//{
-//	events = Events.find().fetch();
-//	for (event in events){
-////    for (var e = 0; e < events.length; e++) {
-////    	event = events[]
-//    	stages = Stages.find({event_id:event._id}).fetch();
-//    	for(stage in stages){
-//        	entrants = Entrants.find({event_id:event._id}).fetch();
-//        	for(stage in stages){
-//
-//    		//        for (var s = 0; s < stages.length; s++) {
-//				score = Scores.findOne({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id});
-//				if (!score){
-//					console.log("add score ");
-//					s = Scores.insert({event_id:event._id, stage_id:stage._id, entrant_id:entrant._id,
-//						score: Math.floor(Random.fraction()*10)*5});
-//
-////					score.score = 
-//
-//					console.log(Scores.findOne(s));
-////					Meteor.setTimeout(addResults, 1000);
-//					return;
-//				}
-////				Deps.flush();
-////				sleep(1000);
-////				Fiber.current.sleep(1000);
-//			});
-//		});
-//	});
-//}
-
-
-Meteor.startup(dog);
+Meteor.startup(demo_data);

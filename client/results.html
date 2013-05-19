@@ -1,0 +1,43 @@
+
+<template name="results">
+<div>
+    {{#if show }}
+	<h1>{{rtevent.name}} Results</h1>
+<!-- 		<ul>
+		<li>Results</li>
+		<li>Stages</li>
+		<li>Entrants</li>
+		</ul>
+ -->
+    <table>
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Entrant</th>
+				<th>Pos</th> 
+				{{#each stages }}
+					<th>{{name}}</th>
+				{{/each}}
+				<th>Total</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each results }}
+				<tr>A result
+					<td>{{number}}</td>
+					<th>{{name}}</th>
+					<td>{{position}}</td>
+					{{#each scores}}
+						<td>{{score}}</td>
+					{{/each}}
+					<td>{{total}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+   {{/if}}
+</template>
+
+
+
+	
