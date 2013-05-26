@@ -12,8 +12,8 @@
     <table>
 		<thead>
 			<tr>
-				<th>#</th>
 				<th>Entrant</th>
+				<th>Full Name</th>
 				<th>Pos</th> 
 				{{#each stages }}
 					<th>{{name}}</th>
@@ -24,7 +24,7 @@
 		<tbody>
 			{{#each results }}
 				<tr>A result
-					<td>{{number}}</td>
+					<td>{{>entrantLabel this}}</td>
 					<th>{{name}}</th>
 					<td>{{position}}</td>
 					{{#each scores}}

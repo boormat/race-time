@@ -38,6 +38,10 @@ Template.page.showRacePicker = function(){
 	return !Session.get('page') || Session.get('page') === "pickRace";
 };
 
+Template.page.runStage = function(){
+	return !Session.get('page') || Session.get('page') === "runStage" || 1;
+};
+
 goTo = function goToF(pageName){
 	//TODO check is valid... or use a router!
 	return Session.set('page', pageName);

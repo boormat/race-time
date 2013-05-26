@@ -1,8 +1,10 @@
 <template name="raceSubmit">
 <div>
+	<h2>New Race</h2>
 	<div class="control-group">
 		<label class="control-label" for="name">Race Name</label>
 		<div class="controls">
+
 			<input name="name" type="text" value="" placeholder="Race Name" />
 		</div>
 	</div>
@@ -29,7 +31,7 @@
 	        {{> todo_item}}
 	      {{/each}}
 	    <div id="new-todo-box">
-	      <input type="text" id="new-todo" placeholder="Stage Name" />
+	      <input type="text" id="new-todo" placeholder="New Stage Name" />
 	    </div>
 	    </ul>
 	</div>
@@ -37,15 +39,8 @@
 
 <template name="todo_item">
 	<li class="todo {{done_class}}">
-	{{#if editing}}
 		<div class="edit">
-			<input id="todo-input" type="text" value="{{text}}" />
+			<input id="todo-input" type="text" value="{{name}}" />
 		</div> 
-	{{else}}
-		<div class="destroy"></div>
-		<div class="display">
-			<div class="todo-text">{{text}}</div>
-		</div>
-	{{/if}}
 	</li>
 </template>

@@ -24,5 +24,19 @@
 		{{> results}}
   	{{/if}}
 
+	{{#if runStage}}
+		 {{> runStage}}
+  	{{/if}}
 	
+</template>
+
+
+<template name="entrantLabel">
+<!-- Helper to display a compact label for entrant.  Their # and short name -->
+<span class="label">
+	<span class="number label label-inverse">
+		{{number}}
+	</span> 
+	{{name}}
+</span>
 </template>
