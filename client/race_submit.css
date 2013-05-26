@@ -55,7 +55,7 @@
     color: #999;
 }
 
-#item-list .todo:hover .destroy {
+#item-list .todo .destroy {
     background: url('/destroy.png') no-repeat 0 0;
 }
 
