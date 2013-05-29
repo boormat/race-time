@@ -1,11 +1,21 @@
 <template name="racePicker">
 	<div>
-		<p>Select your race.</p>
-		<ul> 
-		{{#each raceList}}
-			{{>racePickerItem}}
-		{{/each}}
+		<p>Results</p>
+		<ul>
+			{{#each raceList}}
+				{{>racePickerItem}}
+			{{/each}}
 		</ul>
+
+		<p>Run Stage</p>
+		{{#each raceList}}
+		<h4>{{name}}</h4>
+		<ul>
+			{{#each raceStages _id}}
+				<li class="runStage"><a href="#">{{name}}</a></li>
+			{{/each}}
+		</ul>
+		{{/each}}
 	    <button type="button" class="newRace btn btn-primary">Create Race</button>
 	</div>
 </template>

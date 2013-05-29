@@ -10,13 +10,13 @@ Template.raceSubmit.events({
 
 function onCancel(event) {
 	Meteor._debug('loggy cancel', this, event);
-	goTo("pickRace");
+	Rt.goTo("pickRace");
 }
 
 function onClear(event) {
 	Todos.remove({});
 //	Meteor._debug('loggy cancel', this, event);
-//	goTo("pickRace");
+//	Rt.goTo("pickRace");
 }
 
 function onSave(event, template) {
@@ -34,7 +34,7 @@ function onSave(event, template) {
 
 	var race_id = Races.insert({name: name});
 	Session.set('race_id', race_id);
-	goTo('editRace');
+	Rt.goTo('editRace');
 };
 
 

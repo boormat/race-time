@@ -2,15 +2,16 @@
 // Race results page
 
 //// basic routing
-Template.results.show = function () {
-	  return !! race();
-};
+
+
+Template.results.race = Rt.race;
+Template.results.stages = Rt.stages;
 
 Template.results.events({
 	'click h1': function () {
 		Meteor._debug('unclick');
 		Session.set('race_id', null);
-		goTo("pickRace");
+		Rt.goTo("pickRace");
 	}
 });
 
@@ -23,11 +24,11 @@ function virtual_results() {
 	var scores=[];
 	
 	// Build the row of results per Entrant, adding stage scores array and total.
-	entrants().forEach( function(entrant) {
+	Rt.entrants().forEach( function(entrant) {
 		// array of scores, sorted by stage number.
 		var total = 0;
 		entrant.scores = [];
-		stages().map( function (stage) {
+		Rt.stages().map( function (stage) {
 			var score = Scores.findOne({entrant_id:entrant._id, stage_id:stage._id});
 			if(score){
 				entrant.scores.push(score);

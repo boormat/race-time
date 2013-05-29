@@ -6,12 +6,17 @@ Template.racePicker.raceList = function () {
 };
 
 Template.racePicker.show = function () {
-	return !race();
+	return !Rt.race();
 };
 
 Template.racePicker.events({
 	'click .newRace':onCreateRace,
+	'click .runStage': onRunStage,
 });
+
+Template.racePicker.raceStages = function (race_id) {
+	  return Stages.find({race_id:race_id});
+};
 
 
 //////// 
@@ -23,7 +28,17 @@ Template.racePickerItem.events({
 function onPickRace(event, template)
 {
 	Session.set("race_id", this._id);
-	goTo("results");
+	Rt.goTo("results");
+    event.preventDefault();
+};
+
+function onRunStage(event, template)
+{
+	Meteor._debug("onRunStage", this.race_id, this._id);
+	
+	Session.set("race_id", this.race_id);
+	Session.set("stage_id", this._id);
+//	Rt.goTo("results");
     event.preventDefault();
 };
 
@@ -32,6 +47,6 @@ function onCreateRace(event, template)
 	Meteor._debug("Clicky", event);
 	Meteor._debug("Clicky", template);
 	Session.set("race_id", null);
-	goTo("newRace");
+	Rt.goTo("newRace");
     event.preventDefault();
 };

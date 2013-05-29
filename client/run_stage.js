@@ -1,10 +1,26 @@
-var stage = {name:'dog', penalties:['flags']};
-Template.runStage.stage = stage;
-//Template.runStage.meh = [{name:'dog', val:1},{ name:'cat', val:2}];
+var stage = Rt.stage;
 
 // entrants who have not done stage...
-Template.stageFindNext.pendingEntrants = [{name:'cat', number:1}, {name:'cat2', number:2}];
+Template.stageFindNext.pendingEntrants = function () {
+//	Meteor._debug("pendingEntrants", Session.get('race_id'), Session.get('stage_id'));
+	var stageId = Session.get('stage_id');
+	var entrants = Entrants.find({race_id:Session.get('race_id')});
 
+	var scores = Scores.find({stage_id:stageId});
+//	Meteor._debug("scores", scores);
+
+	
+	var score_eids = [];
+	scores.forEach( function(score) {
+//		Meteor._debug("score", score);
+		score_eids.push(score.entrant_id);});
+//	Meteor._debug("score_eids", score_eids);
+	var readyEntrants = _.reject(entrants.fetch(), 
+			function(e){return _.contains(score_eids, e._id);});
+
+//	Meteor._debug("readyEntrants", readyEntrants);
+	return readyEntrants;
+};
 
 // entrants (from pendingEntrants... selected as ready to start.
 // Shared by setting a flag on the Entrant.  (since can only be 1 place at once!)

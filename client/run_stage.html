@@ -1,5 +1,5 @@
 <template name="runStage">
-<h1>RaceT<sub><sub>i</sub></sub>me Timing {{stage.name}}</h1>
+<h1>RaceT<sub>i</sub>me Timing {{stage.name}}</h1>
 <h3>Find Entrant</h3>
 	{{>stageFindNext}}
 <h3><i class="icon-road"/> Ready to start</h3>
@@ -16,8 +16,7 @@
 <div>
 	<input search="search" type="text" value="" placeholder="search" />
 	{{#each pendingEntrants}}
-		<span class="number badge">{{number}}</span> 
-		<td>{{>entrantLabel this}}</td>
+		{{>entrantLabel this}}
 	{{/each}}
 </div>
 </template>
