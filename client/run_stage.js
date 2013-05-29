@@ -1,30 +1,83 @@
 var stage = Rt.stage;
 
+///////////////////////////////////
+// Stage Find Next Entrants
 // entrants who have not done stage...
+// TODO might be EASIEST to create all the 'blank' results when
+// the stage is opened.  Save allot of hassle!
 Template.stageFindNext.pendingEntrants = function () {
-//	Meteor._debug("pendingEntrants", Session.get('race_id'), Session.get('stage_id'));
 	var stageId = Session.get('stage_id');
 	var entrants = Entrants.find({race_id:Session.get('race_id')});
 
 	var scores = Scores.find({stage_id:stageId});
-//	Meteor._debug("scores", scores);
-
 	
 	var score_eids = [];
 	scores.forEach( function(score) {
-//		Meteor._debug("score", score);
 		score_eids.push(score.entrant_id);});
-//	Meteor._debug("score_eids", score_eids);
 	var readyEntrants = _.reject(entrants.fetch(), 
 			function(e){return _.contains(score_eids, e._id);});
 
-//	Meteor._debug("readyEntrants", readyEntrants);
 	return readyEntrants;
 };
 
+Template.stageFindNext.events({
+		"click .entrant": onQueueEntrant,
+});
+
+function onQueueEntrant(event, template){
+	Meteor._debug("queueEntrant", this, template);
+	var stageId = Session.get('stage_id');
+	var entrantId = this._id;
+	var raceId = this.race_id;
+	
+	// TODO use a Method to do this... so that the back end can merge duplicates.
+	// should work find I think. (see stack overflow)
+    Scores.insert( {stage_id:stageId, entrant_id:entrantId, state:'queued'});
+	
+	event.preventDefault();
+}
+
+
+//////////////////////////////////////
+// Stage Ready
+
 // entrants (from pendingEntrants... selected as ready to start.
 // Shared by setting a flag on the Entrant.  (since can only be 1 place at once!)
-Template.stageReady.entrants = [{name:'cat', number:1}, {name:'cat2', number:2}];
+Template.stageReady.entrants = getReadyEntrantScores;
+
+Template.stageReady.events({
+	"click .dequeue": onDequeueEntrant,
+});
+
+function getReadyEntrantScores(){
+	var stageId = Session.get('stage_id');
+	var scores = Scores.find({stage_id:stageId, state:"queued"});
+
+	var ess=[];// list of Entrant and Score
+	scores.forEach( function(score) {
+		es={};
+//		Meteor._debug("score", score);
+		es.score = score;
+		es.entrant = Entrants.findOne({_id:score.entrant_id});
+		ess.push(es);
+	});
+
+//	Meteor._debug("getReadyEntrantScores", getReadyEntrantScores);
+	return ess;
+};
+
+
+function onDequeueEntrant(event, template){
+	Meteor._debug("onDequeueEntrant", this, template);
+	var id = this.score._id;
+	Scores.remove( {_id:id}); // TODO instead just change state.  (less risk of data loss!)
+	
+	event.preventDefault();
+}
+
+
+//////////////////////////////////////
+//Stage Ready
 
 Template.stageRunning.entrants = [{name:'cat', number:1}, {name:'cat2', number:2}];
 
