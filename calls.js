@@ -1,10 +1,15 @@
 
-Meteor.methods({openStage:openStageCall});
+
+//Meteor.methods({openStage:openStageCall});
 
 // Meteor.call function (if not autopublished)
 // Sets stage status as open and creates empty Score records for all entrants.
 // Does not replace existing scores.
 // No return values
+
+CallsHack = {};
+
+CallsHack.openStageCall = openStageCall;
 function openStageCall(stage_id)
 {
 	Meteor._debug("openStageCall", "hello stage", stage_id);

@@ -1,6 +1,13 @@
 <template name="runStage">
+<div>
+{{> starterDialog}}
+{{> finisherDialog}}
+
 <h1>RaceT<sub>i</sub>me Timing {{stage.name}}</h1>
-<h3>Find Entrant</h3>
+<button class=" btn openStage">Open Stage</button>
+<button class=" btn closeStage">Close Stage</button>
+
+<h3>Pick Next</h3>
 	{{>stageFindNext}}
 <h3><i class="icon-road"/> Ready to start</h3>
 	{{>stageReady}}
@@ -10,13 +17,13 @@
 	{{>stageScore}}
 <h3><i class="icon-list"/> Done</h3>
 	{{>stageDone}}
+</div>
 </template>
 
 <template name="stageFindNext">
 <div>
-	<input search="search" type="text" value="" placeholder="search" />
 	{{#each pendingEntrants}}
-		{{>entrantLabel this}}
+		{{>entrantLabel entrant}}
 	{{/each}}
 </div>
 </template>
@@ -27,7 +34,7 @@
 	{{#each entrants}}
 		<tr>
 			<td>{{>entrantLabel entrant}}</td>
-			<td><button class=" btn btn-danger"><i class="icon-time"/> Starting...</button></td>
+			<td><button class=" btn btn-danger getReady"><i class="icon-time"/> Starting...</button></td>
 			<td><button class=" btn dequeue">DeQueue</button></td>
 			<td><button class=" btn ">DNS</button></td>
 			<td><button class=" btn ">Class Changed</button></td>
@@ -40,10 +47,10 @@
 
 <template name="stageRunning">
 <table>
-	{{#each entrants}}
+	{{#each entrantScores}}
 		<tr>
-		<td>{{>entrantLabel this}}</td>
-		<td><button class=" btn btn-danger"><i class="icon-time"/>Finishing...</button></td>
+		<td>{{>entrantLabel entrant}}</td>
+		<td><button class=" btn btn-danger getReady"><i class="icon-time"/>Finishing...</button></td>
 		</tr>
 	{{/each}}
 </table>
@@ -70,6 +77,60 @@
 </template>
 
 
+
+<template name="starterDialog">
+{{#if show}}
+<div class="mask"/>
+<div class="modal">
+	<div class="modal-header">
+		<button type="button" class="close done">&times;</button>
+	</div>
+
+	<div class="modal-body">
+		{{#each entrantScores}}
+		<div class="invite-row">
+		<h3>Starter Ready...</h3>
+		<h1>0:00:00{{>entrantLabel entrant}}</h1>
+			<a href="#" class="btn btn-primary now"><i class="icon-time" />Go</a>
+			<a href="#" class="btn cancel done">Cancel Start</a>
+		</div>
+		{{/each}}
+	</div>
+
+	<div class="modal-footer">
+		<a href="#" class="btn btn-primary notTimer">I'm not a Timer!</a>
+	</div>
+</div>
+{{/if}}
+</template>
+
+
+
+<template name="finisherDialog">
+{{#if show}}
+<div class="mask"/>
+<div class="modal">
+	<div class="modal-header">
+		<button type="button" class="close done">&times;</button>
+	</div>
+
+	<div class="modal-body">
+		{{#each entrantScores}}
+		<div class="invite-row">
+		<h3>Starter Ready...</h3>
+		<h1>0:00:00{{>entrantLabel entrant}}</h1>
+			<a href="#" class="btn btn-primary now"><i class="icon-time" />Stop</a>
+			<a href="#" class="btn cancel done">Later</a>
+		</div>
+		{{/each}}
+	</div>
+
+	<div class="modal-footer">
+		<a href="#" class="btn btn-primary notTimer">I'm not a Timer!</a>
+	</div>
+</div>
+{{/if}}
+</template>
 
 
 

@@ -13,6 +13,7 @@ Races = new Meteor.Collection("races");
 Stages =  new Meteor.Collection("stages");
 
 Entrants = new Meteor.Collection("entrants");
+Scores = new Meteor.Collection("scores");
 
 /** per test scores (raw?)
  Best ofs are handled as list of results in the Score.
@@ -45,7 +46,6 @@ expr?
 
 
 */
-Scores = new Meteor.Collection("scores");
 
 
 

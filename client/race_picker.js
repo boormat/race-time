@@ -15,7 +15,7 @@ Template.racePicker.events({
 });
 
 Template.racePicker.raceStages = function (race_id) {
-	  return Stages.find({race_id:race_id});
+	  return Stages.find({race_id:race_id},{sort:{number: 1}});
 };
 
 
@@ -38,7 +38,8 @@ function onRunStage(event, template)
 	
 	Session.set("race_id", this.race_id);
 	Session.set("stage_id", this._id);
-//	Rt.goTo("results");
+
+	Rt.goTo("runStage");
     event.preventDefault();
 };
 
