@@ -69,7 +69,7 @@ function onQueueEntrant(event, template){
 		stage_id:stageId,
 		entrant_id:entrantId,
 		});
-//	Meteor._debug("queueEntrant update", score);
+
 	Scores.update(score._id, {$set:{state:"queued", when:now}});
 	Meteor._debug("queueEntrant update", score, Scores.findOne(score._id));
 	event.preventDefault();
@@ -93,11 +93,26 @@ function onFilterEntrants(event, template){
 // entrants (from pendingEntrants... selected as ready to start.
 // Shared by setting a flag on the Entrant.  (since can only be 1 place at once!)
 Template.stageReady.entrants = getReadyEntrantScores;
+Template.stageReady.next = getReadyNext;
 
 Template.stageReady.events({
 	"click .dequeue": onDequeueEntrant,
 	"click .getReady": onGetReadyToStart,
 });
+
+function getReadyNext(){
+	var stageId = Session.get('stage_id');
+	var score = Scores.findOne({stage_id:stageId, 
+		state:{$in:["queued", "starting"]}},
+		{sort:{when:1, number:1} });
+	Meteor._debug("getReadyNext", stageId, score);
+
+	var es={}; 
+	es.score = score;
+	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
+
+	return es;
+};
 
 function getReadyEntrantScores(){
 	var stageId = Session.get('stage_id');
@@ -113,6 +128,8 @@ function getReadyEntrantScores(){
 		es.entrant = Entrants.findOne({_id:score.entrant_id});
 		ess.push(es);
 	});
+	// hide the 'next' one
+	ess.shift();
 
 	Meteor._debug("getReadyEntrantScores", ess);
 	return ess;
@@ -369,10 +386,13 @@ function onNotFinisher(event, template){
 //Stage Confirm Score
 //Template.stageScore.stage = Rt.stage;
 Template.stageScore.entrantScores = getFinishedEntrantScores;
+Template.stageScore.next = getFinishedEntrantScore;
 
 function getFinishedEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find({stage_id:stageId, state:"finished"});
+	var scores = Scores.find(
+		{stage_id:stageId, state:"finished"},
+		{sort:{when:1, number:1} });
 
 	var ess=[];// list of Entrant and Score
 	scores.forEach( function(score) {
@@ -386,9 +406,28 @@ function getFinishedEntrantScores(){
 		ess.push(es);
 	});
 
+	// drop the 'next' one
+	ess.shift();
 	return ess;
 };
 
+function getFinishedEntrantScore(){
+	var stageId = Session.get('stage_id');
+	var score = Scores.findOne(
+		{stage_id:stageId, state:"finished"},
+		{sort:{when:1, number:1} });
+	
+	Meteor._debug("getFinishedEntrantScore", stageId, score);
+
+	if (!score)
+		return null;
+
+	var es={}; 
+	es.score = score;
+	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
+
+	return es;
+};
 
 
 //Template.stageScore.entrantScore.entrant = [{name:'cat', number:1}, {name:'cat2', number:2}];

@@ -30,18 +30,21 @@
 
 
 <template name="stageReady">
+	{{#each entrants}} {{>entrantLabel entrant}}{{/each}}
+	{{#if next.score}}
+	{{#with next}}
 <table>
-	{{#each entrants}}
-		<tr>
-			<td>{{>entrantLabel entrant}}</td>
-			<td><button class=" btn btn-danger getReady"><i class="icon-time"/> Starting...</button></td>
-			<td><button class=" btn dequeue">DeQueue</button></td>
-			<td><button class=" btn ">DNS</button></td>
-			<td><button class=" btn ">Class Changed</button></td>
-			<td><button class=" btn ">Notes</button></td>
-		</tr>
-	{{/each}}
+	<tr>
+		<td>{{>entrantLabel entrant}}</td>
+		<td><button class=" btn btn-danger getReady"><i class="icon-time"/> Starting...</button></td>
+		<td><button class=" btn dequeue">DeQueue</button></td>
+		<td><button class=" btn ">DNS</button></td>
+		<td><button class=" btn ">Class Changed</button></td>
+		<td><button class=" btn ">Notes</button></td>
+	</tr>
 </table>
+{{/with}}
+{{/if}}
 </template>
 
 
@@ -57,24 +60,6 @@
 </template>
 
 
-
-<template name="stageDone">
-<table>
-	{{#each entrantScores}}
-		<tr>
-		<td>{{>entrantLabel entrant}}</td>
-		<td>{{score.score}}</td>
-		<td><span class="number badge">{{score.code}}</span></td>
-		<td>
-			{{#each penaltyList score.penalties}}
-			<span class="number badge">{{key}} {{val}}</span>
-			{{/each}}
-		</td>
-		<td><a><i class="icon-wrench"/></a></td>
-		</tr>
-	{{/each}}
-</table>
-</template>
 
 
 
@@ -136,8 +121,11 @@
 
 <template name="stageScore">
 <!-- Main editing form of stage result  -->
-<ul>
 	{{#each entrantScores}}
+		{{>entrantLabel entrant}}
+	{{/each}}
+<ul>
+	{{#with next}}
 	<li>
 		{{>entrantLabel entrant}}
 		Cones {{score.penalties.cones}} <button class=" btn ">+</button><button class=" btn ">-</button>
@@ -166,6 +154,27 @@
 
 		<button class=" btn btn-primary">Save</button>
 	</li>
-	{{/each}}
+	{{/with}}
 </ul>
+</template>
+
+
+
+
+<template name="stageDone">
+<table>
+	{{#each entrantScores}}
+		<tr>
+		<td>{{>entrantLabel entrant}}</td>
+		<td>{{score.score}}</td>
+		<td><span class="number badge">{{score.code}}</span></td>
+		<td>
+			{{#each penaltyList score.penalties}}
+			<span class="number badge">{{key}} {{val}}</span>
+			{{/each}}
+		</td>
+		<td><a><i class="icon-wrench"/></a></td>
+		</tr>
+	{{/each}}
+</table>
 </template>
