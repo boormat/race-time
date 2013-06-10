@@ -109,3 +109,6 @@ body {
     text-decoration: none;
     background: rgba(0, 0, 0, 0.1); }
 
+.strike {
+	text-decoration: line-through;
+}

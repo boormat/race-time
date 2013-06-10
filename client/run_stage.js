@@ -225,11 +225,16 @@ function onRunStart(event, template){
 	// should check state is valid... but still record a time in the result
 	// just in case already moved to 'finished'???
 	var id = this.score._id;
-	var startTime = getNowTimestamp();
+
+	var ts = getNowTimestamp();
+	ts.type = "start";
+	ts.user = "TBA";
+	ts.score_id = id;
+	Timestamps.insert(ts);
 	
 	Scores.update(id, {
 		$set:{state:"running"},
-		$push: {rawStartTimes:{user:"TBA", time:startTime}},
+//		$push: {rawStartTimes:{user:"TBA", time:startTime}},
 		});
 
 	var starting = Session.get('startTimeNeeded') || [];
@@ -362,10 +367,16 @@ function onRunStop(event, template){
 	Meteor._debug("onRunStop", this, template);
 	// popup the modal dialog by putting the score into starting state...
 	var id = this.score._id;
-	var time = getNowTimestamp();
+
+	var ts = getNowTimestamp();
+	ts.type = "stop";
+	ts.user = "TBA";
+	ts.score_id = id;
+	Timestamps.insert(ts);
+
 	Scores.update(id, {
 		$set:{state:"finished"},
-		$push: {rawStopTimes:{user:"TBA", time:time}},
+//		$push: {rawStopTimes:{user:"TBA", time:time}},
 		});
 }
 
@@ -387,6 +398,15 @@ function onNotFinisher(event, template){
 //Template.stageScore.stage = Rt.stage;
 Template.stageScore.entrantScores = getFinishedEntrantScores;
 Template.stageScore.next = getFinishedEntrantScore;
+Template.stageScore.asTime = tsToMMss; // add as 'object' props on the TimeStamp coln?
+Template.stageScore.timestampClass = timestampClass;
+
+Template.stageScore.events({
+	"click .save": onScoreSave,
+	"click .penalty": onPenalty,
+//	"click .cancel": onRunStopLater,
+//	"click .notTimer": onNotFinisher,
+});
 
 function getFinishedEntrantScores(){
 	var stageId = Session.get('stage_id');
@@ -397,10 +417,6 @@ function getFinishedEntrantScores(){
 	var ess=[];// list of Entrant and Score
 	scores.forEach( function(score) {
 		es={};
-		es.score = score;
-		p = es.score.penalties = es.score.penalties || {};
-		p.cones = p.cones || 0;
-		p.gates = p.gates || 0;
 		
 		es.entrant = Entrants.findOne({_id:score.entrant_id});
 		ess.push(es);
@@ -417,17 +433,100 @@ function getFinishedEntrantScore(){
 		{stage_id:stageId, state:"finished"},
 		{sort:{when:1, number:1} });
 	
-	Meteor._debug("getFinishedEntrantScore", stageId, score);
-
 	if (!score)
 		return null;
 
 	var es={}; 
 	es.score = score;
 	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
+	es.startTimes=Timestamps.find({score_id:score._id, type:"start"}, {sort:{ts:1, user:1 }});
+	es.stopTimes=Timestamps.find({score_id:score._id, type:"stop"}, {sort:{ts:1, user:1 }});
+
+	Meteor._debug("getFinishedEntrantScore", score, 
+		es.startTimes.fetch(),
+		es.stopTimes.fetch());
 
 	return es;
 };
+
+
+function timestampClass(timestamp) {
+	if (timestamp.ignore)
+		return "strike";
+	return "";
+}
+
+
+function tsToMMss(ts_ms) {
+	var d = new Date(ts_ms);
+//	Meteor._debug("tsToMMss", ts_ms, d); 
+	
+	var m =  d.getMinutes(); 
+	var s =  d.getSeconds();
+	var cs = d.getMilliseconds()/10;
+    var s = m.toPrecision(2) + ':'
+    		+ s.toPrecision(2) + "."
+    		+ cs.toPrecision(2);
+	return s;
+}
+
+function onScoreSave(event, template){
+	Meteor._debug("onScoreSave", this, template);
+	
+	var id = this.score._id;
+
+	Scores.update(id, {
+		$set:{
+			state:"done",
+			//		score:666.99,
+			//	penalties:{cones:1, gates:0}
+			},
+		});
+}
+
+function onPenalty(event, template){
+	Meteor._debug("onScorePlus", this, event, template);
+
+	var id = this.score._id;
+
+	var pname = 'penalties.' + event.target.name;
+	var inc = Number(event.target.value);
+	var p = {};
+	p[pname] = inc;
+
+	// when client side, cant use a selector...
+	if(Meteor.isServer)
+	{
+		Scores.update({_id:id, $gt:{"penalties.cones":0}}, 
+			{$inc:p,});
+	}
+	else
+	{
+		
+		var newp = this.score.penalties.cones + inc;
+
+		if( newp >= 0 ){
+			Meteor._debug("onScorePlus SADF", newp, pname);
+			Scores.update(id, {$inc:p,});
+			}
+		
+	}
+}
+
+//Template.
+Template.toggleableTimestamp.asTime = tsToMMss; // add as 'object' props on the TimeStamp coln?
+Template.toggleableTimestamp.timestampClass = timestampClass;
+Template.toggleableTimestamp.events({
+	"click ": onToggleTimestamp,
+});
+
+function onToggleTimestamp(event, template){
+	Meteor._debug("onToggleTimestamp", this, template, this.ignore);
+
+	Timestamps.update(this._id, {
+		$set:{ ignore:!this.ignore,}
+		});
+}
 
 
 //Template.stageScore.entrantScore.entrant = [{name:'cat', number:1}, {name:'cat2', number:2}];
@@ -438,19 +537,35 @@ function getFinishedEntrantScore(){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Done   Archive.
-var ess = [];
-var es1 = {};
-es1.entrant = {name:'cat', number:1};
-es1.score = { score:61.23, time:61.23, code:'WD', penalties:{cones:1}}; //[{name:'cones', val:1}]};
-es1.rawScores = [{start:{time:2, trashed:0}, stop:{time:1}}, 
-           	{start:{time:2, trashed:1}, stop:{time:1}}
-];
-ess.push(es1);
 
-Template.stageDone.entrantScores = ess;
+//es1.entrant = {name:'cat', number:1};
+//es1.score = { score:61.23, time:61.23, code:'WD', penalties:{cones:1}}; //[{name:'cones', val:1}]};
+//es1.rawScores = [{start:{time:2, trashed:0}, stop:{time:1}}, 
+//           	{start:{time:2, trashed:1}, stop:{time:1}}
+//];
+
+Template.stageDone.entrantScores = getDoneEntrantScores;
 Template.stageDone.stage = Rt.stage;
 //Template.stageDone.myname = function(arg){return "hi arg['cones']";};
 
+
+function getDoneEntrantScores(){
+	var stageId = Session.get('stage_id');
+	var scores = Scores.find(
+		{stage_id:stageId, state:"done"},
+		{sort:{when:1, number:1} });
+
+	var ess=[];// list of Entrant and Score
+	scores.forEach( function(score) {
+		es={};
+		es.score=score;
+		es.entrant = Entrants.findOne({_id:score.entrant_id});
+		
+		ess.push(es);
+	});
+
+	return ess;
+};
 // helper to break down the penalty map to a name value list.
 // more recent Handlebars can apparently do this built in {{@key}}
 Template.stageDone.penaltyList = function(arg){

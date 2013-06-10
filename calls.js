@@ -47,6 +47,10 @@ function insertBlankScore(stage_id, entrant_id)
 		stage_id:stage_id, 
 		entrant_id:entrant_id,
 		state:0, //0 is not run yet.
+		score:null,
+		code:null,
+// TODO add from stage/event template
+		penalties:{cones:0, gates:0,}
 		});
 	return id;
 }

@@ -128,37 +128,42 @@
 	{{#with next}}
 	<li>
 		{{>entrantLabel entrant}}
-		Cones {{score.penalties.cones}} <button class=" btn ">+</button><button class=" btn ">-</button>
-		Gates {{score.penalties.gates}} <button class=" btn ">+</button><button class=" btn ">-</button>
-		<select>
-		<option>Ok Maybe make this a toggle button set (touch screens!)</option>
-		<option>WD</option>
-		<option>DNS</option>
-		<option>DNF</option>
-		</select>
+		Cones {{score.penalties.cones}}
+			<button class=" btn penalty" name="cones" value="1">+</button>
+			<button class=" btn penalty" name="cones" value="-1">-</button>
+		Gates {{score.penalties.gates}}
+			<button class=" btn penalty" name="gates" value="1">+</button>
+			<button class=" btn penalty" name="gates" value="-1">-</button>
+		<ul>
+			<li><button class=" btn ">WD</button></li>
+			<li><button class=" btn ">DNS</button></li>
+			<li><button class=" btn ">DNF</button></li>
+		</ul>
 		<textarea rows="3">{{notes}} make this collapse in some way</textarea>
-		<input type="text" placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!">
-		<table>
-			<thead><td>Start</td><td>Stop</td></thead>
-			<tbody></tbody>
-		{{#each rawScores}}
-			<tr><td>{{#if start.trashed}}<del>{{/if}}{{start.time}}{{#if start.trashed}}</del>{{/if}}</td>
-			<td>{{stop.time}}</td></tr>
-		{{/each}}
-		</tbody>
-		<tfoot>
-			<tr><td>Avg time{{start.time}}</td>
-			<td>Avg time{{stop.time}}</td></tr>
-		</tfoot>
-		</table>
 
-		<button class=" btn btn-primary">Save</button>
+		<ul>Start:	
+		{{#each startTimes}}
+			<li>{{>toggleableTimestamp this}}</li>
+		{{/each}}		
+		</ul>
+		<ul>Stop:		
+		{{#each stopTimes}}
+			<li>{{>toggleableTimestamp this}}</li>
+		{{/each}}		
+		</ul>
+		<input type="text" placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!">
+
+		<button class=" btn btn-primary save">Save</button>
 	</li>
 	{{/with}}
 </ul>
 </template>
 
-
+<template name="toggleableTimestamp">
+<div class={{timestampClass this}}>
+	{{user}} {{asTime ts}}
+</div>
+</template>
 
 
 <template name="stageDone">

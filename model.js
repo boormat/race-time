@@ -14,6 +14,7 @@ Stages =  new Meteor.Collection("stages");
 
 Entrants = new Meteor.Collection("entrants");
 Scores = new Meteor.Collection("scores");
+Timestamps = new Meteor.Collection("timestamps");
 
 /** per test scores (raw?)
  Best ofs are handled as list of results in the Score.
