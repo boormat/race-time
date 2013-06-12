@@ -5,6 +5,40 @@ function getNowTimestamp(){
 	return {ts:now,  local:now, serverOffset:0.0};
 }
 
+// helper gets list Entrant and Scores from the stage, in any of the states.
+// skips the First skipCount (e.g. use 1 to not include the next one) 
+function getEntrantScores(stageId, states, skipCount, sort){
+	sort = sort || {when:1, number:1};
+	skipCount = skipCount || 0;
+	var scores = Scores.find({stage_id:stageId, 
+		state:{$in:states}},
+		{sort:sort, skip:skipCount });
+
+	var ess=[];// list of Entrant and Score
+	scores.forEach( function(score) {
+		es={};
+		Meteor._debug("score", score);
+		es.score = score;
+		es.entrant = Entrants.findOne({_id:score.entrant_id});
+		ess.push(es);
+	});
+
+	return ess;
+};
+
+//helper gets NEXT Entrant and Scores from the stage, in any of the states.
+function getEntrantScore(stageId, states, sort){
+	sort = sort || {when:1, number:1};
+	var score = Scores.findOne({stage_id:stageId, 
+		state:{$in:states}},
+		{sort:sort});
+
+	var es={}; 
+	es.score = score;
+	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
+	return es;
+};
+
 
 ///////////////////////////////////
 // Overall Stage Page. (nav/admin)
@@ -21,7 +55,6 @@ function onOpenStage(event, template){
 	var stageId = Session.get('stage_id');
 
 	Session.set('starter', 1);
-//	Meteor.call("openStage", stageId);
 	CallsHack.openStageCall(stageId);
 }
 
@@ -29,30 +62,14 @@ function onOpenStage(event, template){
 ///////////////////////////////////
 // Stage Find Next Entrants
 // entrants who have not done stage...
-// TODO check if reactivity churn is too high on results???
-// MAYBE this should probably be a publication? Still need filter on client tho?
 Template.stageFindNext.pendingEntrants = function () {
 	// stage id should maybe a template parameter! (do not use globals in sub-templates!)
 	var stageId = Session.get('stage_id');
-	
-	var scores = Scores.find({
-		stage_id:stageId, state:0 },
-		{sort:{number:1} });
-	
-	var ess =[];
-	scores.map(function(score){
-		es = {};
-		es.score = score;
-		es.entrant = Entrants.findOne(score.entrant_id);
-		Meteor._debug("pendingEntrants", es);
-
-		ess.push(es);
-	});
-	return ess;
+	return getEntrantScores(stageId, [0], 0, {number:1});
 };
 
 Template.stageFindNext.events({
-		"click .entrant": onQueueEntrant,
+	"click .entrant": onQueueEntrant,
 });
 
 
@@ -61,29 +78,16 @@ function onQueueEntrant(event, template){
 	var stageId = Session.get('stage_id');
 	var entrantId = this._id;
 	var now = Date.now();
-//	var raceId = this.race_id;
 	
 	// TODO use a Method to do this... so that the back end can merge duplicates.
 	// should work find I think. (see stack overflow)
 	var score = Scores.findOne({
 		stage_id:stageId,
 		entrant_id:entrantId,
-		});
+	});
 
 	Scores.update(score._id, {$set:{state:"queued", when:now}});
-	Meteor._debug("queueEntrant update", score, Scores.findOne(score._id));
 	event.preventDefault();
-}
-
-function onFilterEntrants(event, template){
-	Meteor._debug("onFilterEntrants", this, template);
-	var value = String(event.target.value || "");
-	Meteor._debug("onFilterEntrants", value);
-
-	// This sets up a DOM change cycle that is clearing the input.
-	// maybe a focus thing?
-	Session.set('entrantFilter', value);
-//	event.preventDefault();
 }
 
 
@@ -102,37 +106,12 @@ Template.stageReady.events({
 
 function getReadyNext(){
 	var stageId = Session.get('stage_id');
-	var score = Scores.findOne({stage_id:stageId, 
-		state:{$in:["queued", "starting"]}},
-		{sort:{when:1, number:1} });
-	Meteor._debug("getReadyNext", stageId, score);
-
-	var es={}; 
-	es.score = score;
-	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
-
-	return es;
+	return getEntrantScore(stageId, ["queued", "starting"]);	
 };
 
 function getReadyEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find({stage_id:stageId, 
-		state:{$in:["queued", "starting"]}},
-		{sort:{when:1, number:1} });
-
-	var ess=[];// list of Entrant and Score
-	scores.forEach( function(score) {
-		es={};
-		Meteor._debug("score", score);
-		es.score = score;
-		es.entrant = Entrants.findOne({_id:score.entrant_id});
-		ess.push(es);
-	});
-	// hide the 'next' one
-	ess.shift();
-
-	Meteor._debug("getReadyEntrantScores", ess);
-	return ess;
+	return getEntrantScores(stageId, ["queued", "starting"], 1);
 };
 
 
@@ -155,6 +134,7 @@ function onGetReadyToStart(event, template){
 
 	event.preventDefault();
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,22 +261,7 @@ Template.stageRunning.events({
 //Template.stageRunning.entrants = // [{name:'cat', number:1}, {name:'cat2', number:2}];
 function getRunningEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find(
-		{stage_id:stageId, state:{$in:["running","finishing"]}},
-		{sort:{when:1, number:1}}
-		);
-
-	var ess=[];// list of Entrant and Score
-	scores.forEach( function(score) {
-		es={};
-//		Meteor._debug("score", score);
-		es.score = score;
-		es.entrant = Entrants.findOne({_id:score.entrant_id});
-		ess.push(es);
-	});
-
-//	Meteor._debug("getStarterEntrantScores", ess);
-	return ess;
+	return getEntrantScores(stageId, ["running","finishing"]);
 };
 
 function onGetReadyToFinish(event, template){
@@ -339,17 +304,7 @@ Template.finisherDialog.show = function () {
 
 function getFinisherEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find({stage_id:stageId, state:"finishing"});
-
-	var ess=[];// list of Entrant and Score
-	scores.forEach( function(score) {
-		es={};
-		es.score = score;
-		es.entrant = Entrants.findOne({_id:score.entrant_id});
-		ess.push(es);
-	});
-
-	return ess;
+	return getEntrantScores(stageId, ["finishing"]);
 };
 
 function onRunStopLater(event, template){
@@ -380,15 +335,6 @@ function onRunStop(event, template){
 		});
 }
 
-//function onCancelStarting(event, template){
-//	Meteor._debug("onCancelStarting", this, template);
-//	// popup the modal dialog by putting the score into starting state...
-//	var id = this.score._id;
-//	Scores.update(id, {$set:{state:"queued"}});
-//	
-//	event.preventDefault();
-//}
-
 function onNotFinisher(event, template){
 	Session.set('finisher', null);
 }
@@ -404,48 +350,22 @@ Template.stageScore.timestampClass = timestampClass;
 Template.stageScore.events({
 	"click .save": onScoreSave,
 	"click .penalty": onPenalty,
-//	"click .cancel": onRunStopLater,
-//	"click .notTimer": onNotFinisher,
 });
 
 function getFinishedEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find(
-		{stage_id:stageId, state:"finished"},
-		{sort:{when:1, number:1} });
-
-	var ess=[];// list of Entrant and Score
-	scores.forEach( function(score) {
-		es={};
-		
-		es.entrant = Entrants.findOne({_id:score.entrant_id});
-		ess.push(es);
-	});
-
-	// drop the 'next' one
-	ess.shift();
-	return ess;
+	return getEntrantScores(stageId, ["finished"], 1);
 };
 
 function getFinishedEntrantScore(){
 	var stageId = Session.get('stage_id');
-	var score = Scores.findOne(
-		{stage_id:stageId, state:"finished"},
-		{sort:{when:1, number:1} });
-	
-	if (!score)
+
+	var es = getEntrantScore(stageId, ["finished"]);
+	if (! es.score)
 		return null;
-
-	var es={}; 
-	es.score = score;
-	es.entrant = score ? Entrants.findOne({_id:score.entrant_id}) : {};
-	es.startTimes=Timestamps.find({score_id:score._id, type:"start"}, {sort:{ts:1, user:1 }});
-	es.stopTimes=Timestamps.find({score_id:score._id, type:"stop"}, {sort:{ts:1, user:1 }});
-
-	Meteor._debug("getFinishedEntrantScore", score, 
-		es.startTimes.fetch(),
-		es.stopTimes.fetch());
-
+	
+	es.startTimes=Timestamps.find({score_id:es.score._id, type:"start"}, {sort:{ts:1, user:1 }});
+	es.stopTimes=Timestamps.find({score_id:es.score._id, type:"stop"}, {sort:{ts:1, user:1 }});
 	return es;
 };
 
@@ -459,15 +379,14 @@ function timestampClass(timestamp) {
 
 function tsToMMss(ts_ms) {
 	var d = new Date(ts_ms);
-//	Meteor._debug("tsToMMss", ts_ms, d); 
 	
 	var m =  d.getMinutes(); 
 	var s =  d.getSeconds();
 	var cs = d.getMilliseconds()/10;
-    var s = m.toPrecision(2) + ':'
+    var str = m.toPrecision(2) + ':'
     		+ s.toPrecision(2) + "."
     		+ cs.toPrecision(2);
-	return s;
+	return str;
 }
 
 function onScoreSave(event, template){
@@ -497,7 +416,7 @@ function onPenalty(event, template){
 	// when client side, cant use a selector...
 	if(Meteor.isServer)
 	{
-		Scores.update({_id:id, $gt:{"penalties.cones":0}}, 
+		Scores.update({_id:id, $gt:{pname:0}}, 
 			{$inc:p,});
 	}
 	else
@@ -529,12 +448,6 @@ function onToggleTimestamp(event, template){
 }
 
 
-//Template.stageScore.entrantScore.entrant = [{name:'cat', number:1}, {name:'cat2', number:2}];
-//Template.stageScore.entrantScore.rawScores = [{start:{time:2, trashed:0}, stop:{time:1}}, 
-//	{start:{time:2, trashed:0}, stop:{time:1}}
-//	];
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Done   Archive.
 
@@ -551,21 +464,9 @@ Template.stageDone.stage = Rt.stage;
 
 function getDoneEntrantScores(){
 	var stageId = Session.get('stage_id');
-	var scores = Scores.find(
-		{stage_id:stageId, state:"done"},
-		{sort:{when:1, number:1} });
-
-	var ess=[];// list of Entrant and Score
-	scores.forEach( function(score) {
-		es={};
-		es.score=score;
-		es.entrant = Entrants.findOne({_id:score.entrant_id});
-		
-		ess.push(es);
-	});
-
-	return ess;
+	return getEntrantScores(stageId, ["done"]);
 };
+
 // helper to break down the penalty map to a name value list.
 // more recent Handlebars can apparently do this built in {{@key}}
 Template.stageDone.penaltyList = function(arg){
@@ -574,6 +475,5 @@ Template.stageDone.penaltyList = function(arg){
 		return {'key':key, 'val':val};}
 		);
 	return meh;
-	};
-//	return [arg['cones']];};//"hi arg['cones']";};
-	
+};
+
