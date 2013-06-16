@@ -15,7 +15,8 @@ Template.racePicker.events({
 });
 
 Template.racePicker.raceStages = function (race_id) {
-	  return Stages.find({race_id:race_id},{sort:{number: 1}});
+	  return Stages.find({race_id:race_id},
+				{sort:{number:1, name:1}});
 };
 
 

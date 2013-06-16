@@ -9,7 +9,9 @@ Rt.race = function raceF() {
 };
 
 Rt.stages = function stagesF() {
-	  return Stages.find({race_id:Session.get('race_id')});
+	  return Stages.find(
+		{ race_id:Session.get('race_id')},
+		{sort:{number:1, name:1}});
 };
 
 Rt.stage = function stagesF() {

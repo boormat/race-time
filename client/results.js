@@ -29,7 +29,8 @@ function virtual_results() {
 		var total = 0;
 		entrant.scores = [];
 		Rt.stages().map( function (stage) {
-			var score = Scores.findOne({entrant_id:entrant._id, stage_id:stage._id});
+			var score = Scores.findOne(
+					{entrant_id:entrant._id, stage_id:stage._id, state:SSState.done});
 			if(score){
 				entrant.scores.push(score);
 				total += score.score;
@@ -80,7 +81,7 @@ function positions_map(scores){
 	Meteor._debug('counts', counts);
 
 	// sort and filter to unique scores 
-	var ss = _.map(scores, function(v) {return parseInt(v);});
+	var ss = _.map(scores, function(v) {return v;});
 	ss.sort(function(a,b){return a-b;}); // stupid javascript numeric sort!
 	var sscores = _.uniq(ss, false);
 	Meteor._debug('sscores', sscores);

@@ -140,7 +140,6 @@
 			<li><button class=" btn ">DNF</button></li>
 		</ul>
 		<textarea rows="3">{{notes}} make this collapse in some way</textarea>
-
 		<ul>Start:	
 		{{#each startTimes}}
 			<li>{{>toggleableTimestamp this}}</li>
@@ -149,9 +148,13 @@
 		<ul>Stop:		
 		{{#each stopTimes}}
 			<li>{{>toggleableTimestamp this}}</li>
-		{{/each}}		
+		{{/each}}
 		</ul>
-		<input type="text" placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!">
+		<input type="text" class="time" id="time" 
+			placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!"
+			value="{{time}}"
+			{{#if timeSet}}disabled="true"{{/if}}
+			>
 
 		<button class=" btn btn-primary save">Save</button>
 	</li>
@@ -171,15 +174,23 @@
 	{{#each entrantScores}}
 		<tr>
 		<td>{{>entrantLabel entrant}}</td>
-		<td>{{score.score}}</td>
-		<td><span class="number badge">{{score.code}}</span></td>
+		<td>{{>notNull score.score}}</td>
+		<td>{{>notNull score.rawTime}}</td>
+		{{#if score.code}}<td><span class="number badge">{{score.code}}</span></td>{{/if}}
 		<td>
 			{{#each penaltyList score.penalties}}
 			<span class="number badge">{{key}} {{val}}</span>
 			{{/each}}
 		</td>
-		<td><a><i class="icon-wrench"/></a></td>
+		<td><a><i class="icon-wrench edit"/></a></td>
 		</tr>
 	{{/each}}
 </table>
 </template>
+
+<template name="notNull">
+{{#if this}}{{this}}
+{{else}} is null
+{{/if}}
+</template>
+

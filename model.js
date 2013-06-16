@@ -16,191 +16,101 @@ Entrants = new Meteor.Collection("entrants");
 Scores = new Meteor.Collection("scores");
 Timestamps = new Meteor.Collection("timestamps");
 
-/** per test scores (raw?)
- Best ofs are handled as list of results in the Score.
- Scores can include raw times, counts, penalties, dns etc etc.
- 
- Run vs Score (best of...)?
 
-score = {
-race_id: string,
-stage_id: string,
-run       integer, from 1.
-time
 
-details{   Details are different per type.  So know what to custom display?
-start time, end time   // saw a js date helper in examples somewhere!?
-flags int,
+
+
+function MeNum(names){
+	var anum = _.object(names, names);
+	return Object.freeze(anum);
 }
 
+SSState = MeNum([	
+                 "running", 
+                 "finishing",
+                 "finished",
+                 "done"]);
 
-stage type khana = 
-counterfields = ['flags', ]
-best = 1 int
-bestof = 1 int
+SSCode = MeNum([	
+                "WD", 
+                "DNS",
+                "DNF"]);
 
-fields
-{ type = count, duration, }
-per{ 'flags':1 }   = float, seconds.
-expr?
+function calcScore(score, slowestTime, fastestTime){
+	// code (WD etc)
+	// penalites.
+	// max times (slowest +, fastest )
+	// TODO make slowest and fastest a reactive value on Stage.
+
+	// TODO make all this configurable somehow!
+	var failTime = Math.min(slowestTime + 5 , 2 * fastestTime);
+	var failTimeDNS = Math.min(slowestTime + 10);
+
+	if(score.state !== SSState.done){
+		return failTimeDNS;
+	}
+	
+	var s;
+	switch (score.code) {
+	case SSCode.WD:
+	case SSCode.DNF:
+		s = failTime; 
+		break;
+
+	case SSCode.DNS:
+		s = failTimeDNS;
+		break;
+
+	default:
+		Meteor._debug("calcScore", score.rawTime, parseFloat(score.rawTime));
+
+		var penalties = 	_.reduce(score.penalties, 
+				function(memo, num){ return memo + parseInt(num); }, 0);
+		s = parseFloat(score.rawTime) + 5 * penalties;
+		
+	break;
+	}
+	return s;
 }
 
+Meteor.startup(function () {
+	Deps.autorun(function () {
+		Meteor._debug("maybeupdatescore");
 
-*/
+			// Need to calc score in a REACTIVE function to pick up new slowest and fastest times...
+			// OR do it on load?
+			var scores = Scores.find(
+				{state:SSState.done,});
 
 
+			scores.map( function (score){
+				// need a gt$ to ensure a non null score?
+				var fastest = Scores.findOne(
+						{stage_id:score.stage_id, 
+							state:SSState.done,
+//							code:{$exists:false}, // ie OK
+							rawTime:{$exists:true}, // only exist it valid time
+							}, 
+						{sort:{rawTime:-1}});
+				var slowest = Scores.findOne(
+						{stage_id:score.stage_id, 
+							state:SSState.done,
+//							code:{$exists:false}, // ie OK
+							rawTime:{$exists:true}, // only exist it valid time
+							}, 
+						{sort:{rawTime:1}});
+				Meteor._debug("maybeupdatescore", score, slowest, fastest);
 
+				if(slowest && fastest){
+					var s = calcScore(score, slowest, fastest);
+					if(s !== score.score){
+						Meteor._debug("updatescore", score, slowest, fastest);
+						Meteor._debug("updatescore", s, slowest.rawTime, fastest.rawTime);
+						Scores.update(score._id, {
+							$set:{score:s,},});
+					}
 
-
-/*
-  Each party is represented by a document in the Parties collection:
-    owner: user id
-    x, y: Number (screen coordinates in the interval [0, 1])
-    title, description: String
-    public: Boolean
-    invited: Array of user id's that are invited (only if !public)
-    rsvps: Array of objects like {user: userId, rsvp: "yes"} (or "no"/"maybe")
- */
-//Parties = new Meteor.Collection("parties");
-//
-//Parties.allow({
-//	insert: function (userId, party) {
-//		return false; // no cowboy inserts -- use createParty method
-//	},
-//	update: function (userId, party, fields, modifier) {
-//		if (userId !== party.owner)
-//			return false; // not the owner
-//
-//		var allowed = ["title", "description", "x", "y"];
-//		if (_.difference(fields, allowed).length)
-//			return false; // tried to write to forbidden field
-//
-//		// A good improvement would be to validate the type of the new
-//		// value of the field (and if a string, the length.) In the
-//		// future Meteor will have a schema system to makes that easier.
-//		return true;
-//	},
-//	remove: function (userId, party) {
-//		// You can only remove parties that you created and nobody is going to.
-//		return party.owner === userId && attending(party) === 0;
-//	}
-//});
-//
-//attending = function (party) {
-//	return (_.groupBy(party.rsvps, 'rsvp').yes || []).length;
-//};
-//
-//Meteor.methods({
-//	// options should include: title, description, x, y, public
-//	createParty: function (options) {
-//		options = options || {};
-//		if (! (typeof options.title === "string" && options.title.length &&
-//				typeof options.description === "string" &&
-//				options.description.length &&
-//				typeof options.x === "number" && options.x >= 0 && options.x <= 1 &&
-//				typeof options.y === "number" && options.y >= 0 && options.y <= 1))
-//			throw new Meteor.Error(400, "Required parameter missing");
-//		if (options.title.length > 100)
-//			throw new Meteor.Error(413, "Title too long");
-//		if (options.description.length > 1000)
-//			throw new Meteor.Error(413, "Description too long");
-//		if (! this.userId)
-//			throw new Meteor.Error(403, "You must be logged in");
-//
-//		return Parties.insert({
-//			owner: this.userId,
-//			x: options.x,
-//			y: options.y,
-//			title: options.title,
-//			description: options.description,
-//			public: !! options.public,
-//			invited: [],
-//			rsvps: []
-//		});
-//	},
-//
-//	invite: function (partyId, userId) {
-//		var party = Parties.findOne(partyId);
-//		if (! party || party.owner !== this.userId)
-//			throw new Meteor.Error(404, "No such party");
-//		if (party.public)
-//			throw new Meteor.Error(400,
-//					"That party is public. No need to invite people.");
-//		if (userId !== party.owner && ! _.contains(party.invited, userId)) {
-//			Parties.update(partyId, { $addToSet: { invited: userId } });
-//
-//			var from = contactEmail(Meteor.users.findOne(this.userId));
-//			var to = contactEmail(Meteor.users.findOne(userId));
-//			if (Meteor.isServer && to) {
-//				// This code only runs on the server. If you didn't want clients
-//				// to be able to see it, you could move it to a separate file.
-//				Email.send({
-//					from: "noreply@example.com",
-//					to: to,
-//					replyTo: from || undefined,
-//					subject: "PARTY: " + party.title,
-//					text:
-//						"Hey, I just invited you to '" + party.title + "' on All Tomorrow's Parties." +
-//						"\n\nCome check it out: " + Meteor.absoluteUrl() + "\n"
-//				});
-//			}
-//		}
-//	},
-//
-//	rsvp: function (partyId, rsvp) {
-//		if (! this.userId)
-//			throw new Meteor.Error(403, "You must be logged in to RSVP");
-//		if (! _.contains(['yes', 'no', 'maybe'], rsvp))
-//			throw new Meteor.Error(400, "Invalid RSVP");
-//		var party = Parties.findOne(partyId);
-//		if (! party)
-//			throw new Meteor.Error(404, "No such party");
-//		if (! party.public && party.owner !== this.userId &&
-//				!_.contains(party.invited, this.userId))
-//			// private, but let's not tell this to the user
-//			throw new Meteor.Error(403, "No such party");
-//
-//		var rsvpIndex = _.indexOf(_.pluck(party.rsvps, 'user'), this.userId);
-//		if (rsvpIndex !== -1) {
-//			// update existing rsvp entry
-//
-//			if (Meteor.isServer) {
-//				// update the appropriate rsvp entry with $
-//				Parties.update(
-//						{_id: partyId, "rsvps.user": this.userId},
-//						{$set: {"rsvps.$.rsvp": rsvp}});
-//			} else {
-//				// minimongo doesn't yet support $ in modifier. as a temporary
-//				// workaround, make a modifier that uses an index. this is
-//				// safe on the client since there's only one thread.
-//				var modifier = {$set: {}};
-//				modifier.$set["rsvps." + rsvpIndex + ".rsvp"] = rsvp;
-//				Parties.update(partyId, modifier);
-//			}
-//
-//			// Possible improvement: send email to the other people that are
-//			// coming to the party.
-//		} else {
-//			// add new rsvp entry
-//			Parties.update(partyId,
-//					{$push: {rsvps: {user: this.userId, rsvp: rsvp}}});
-//		}
-//	}
-//});
-
-///////////////////////////////////////////////////////////////////////////////
-//Users
-//
-//displayName = function (user) {
-//	if (user.profile && user.profile.name)
-//		return user.profile.name;
-//	return user.emails[0].address;
-//};
-//
-//var contactEmail = function (user) {
-//	if (user.emails && user.emails.length)
-//		return user.emails[0].address;
-//	if (user.services && user.services.facebook && user.services.facebook.email)
-//		return user.services.facebook.email;
-//	return null;
-//};
+			});
+		}
+	});
+});
