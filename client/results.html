@@ -11,9 +11,9 @@
     <table>
 		<thead>
 			<tr>
-				<th>Entrant</th>
-				<th>Full Name</th>
-				<th>Pos</th> 
+				<th align="left">Entrant</th>
+				<th align="left">Full Name</th>
+				<th align="left">Pos</th> 
 				{{#each stages }}
 					<th>{{name}}</th>
 				{{/each}}
@@ -24,12 +24,12 @@
 			{{#each results }}
 				<tr>A result
 					<td>{{>entrantLabel this}}</td>
-					<th>{{name}}</th>
-					<td>{{position}}</td>
+					<td align="left">{{name}}</th>
+					<td align="right">{{position.name}}</td>
 					{{#each scores}}
-						<td>{{score}}</td>
+						<td align="right">{{this}}</td>
 					{{/each}}
-					<td>{{total}}</td>
+					<td align="right">{{total}}</td>
 				</tr>
 			{{/each}}
 		</tbody>
