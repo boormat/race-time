@@ -434,12 +434,13 @@ function getFinishedEntrantScore(){
 		es.time = Math.round(es.time * 100) / 100; // round to 100ths (So always consistent)
 		//  TODO make configurable... and pad zeros in html
 		es.timeSet=true;
-		Meteor._debug("times", startAvg, stopAvg, es.time);
+		Meteor._debug("times stopwatch", startAvg, stopAvg, es.time);
 	}
 	else
 	{		
 		es.timeSet=false;
-		es.time = es.score.rawTime;
+		es.time = es.score.editTime || es.score.rawTime;
+		Meteor._debug("times manual", es.score.editTime, es.score.rawTime, es.time);
 	}
 
 
@@ -469,15 +470,33 @@ function tsToMMss(ts_ms) {
 function onScoreSave(event, template){
 
 	var id = this.score._id;
-	var t = this.timeSet ? this.time : $('#time').val();
-	t = Math.round(t * 100) / 100; // round to 100ths (So always consistent)
-	Meteor._debug("onScoreSave", t, this, template);
-	Scores.update(id, {
-		$set:{
-			state:SSState.done,
-			rawTime:t,
-		},
-	});
+	// be carefull to not overwrite a manually entered time
+	// when a user toggles the stopwatch times.
+	// store it in editTime for safekeeping
+	if(! this.timeSet){
+		var t = $('#time').val();
+		t = Math.round(t * 100) / 100; // round to 100ths (So always consistent)
+		Meteor._debug("onScoreSave", t, this, template);
+		Scores.update(id, {
+			$set:{
+				state:SSState.done,
+				editTime:t,
+				rawTime:t,
+			},
+		});
+	}
+	else{
+		// avg time
+		var t = this.time;
+		t = Math.round(t * 100) / 100; // round to 100ths (So always consistent)
+		Meteor._debug("onScoreSave", t, this, template);
+		Scores.update(id, {
+			$set:{
+				state:SSState.done,
+				rawTime:t,
+			},
+		});
+	}
 }
 
 

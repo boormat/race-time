@@ -37,9 +37,9 @@
 	<tr>
 		<td>{{>entrantLabel entrant}}</td>
 		<td><button class=" btn btn-danger getReady"><i class="icon-time"/> Starting...</button></td>
-		<td><button class=" btn dequeue">DeQueue</button></td>
+		<td><button class=" btn dequeue">Later</button></td>
 		<td><button class=" btn ">DNS</button></td>
-		<td><button class=" btn ">Class Changed</button></td>
+		<td><button class=" btn ">Show me class list so can change if required.</button></td>
 		<td><button class=" btn ">Notes</button></td>
 	</tr>
 </table>
@@ -150,11 +150,13 @@
 			<li>{{>toggleableTimestamp this}}</li>
 		{{/each}}
 		</ul>
-		<input type="text" class="time" id="time" 
-			placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!"
-			value="{{time}}"
-			{{#if timeSet}}disabled="true"{{/if}}
-			>
+		{{#if timeSet}}
+			{{time}}<p>
+		{{else}}
+			<input type="text" class="time" id="time" 
+				placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!"
+				value="{{time}}">
+		{{/if}}
 
 		<button class=" btn btn-primary save">Save</button>
 	</li>
@@ -174,7 +176,6 @@
 	{{#each entrantScores}}
 		<tr>
 		<td>{{>entrantLabel entrant}}</td>
-		<td>{{>notNull score.score}}</td>
 		<td>{{>notNull score.rawTime}}</td>
 		{{#if score.code}}<td><span class="number badge">{{score.code}}</span></td>{{/if}}
 		<td>
