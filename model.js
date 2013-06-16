@@ -74,43 +74,44 @@ function calcScore(score, slowestTime, fastestTime){
 }
 
 Meteor.startup(function () {
-	Deps.autorun(function () {
-		Meteor._debug("maybeupdatescore");
-
-			// Need to calc score in a REACTIVE function to pick up new slowest and fastest times...
-			// OR do it on load?
-			var scores = Scores.find(
-				{state:SSState.done,});
-
-
-			scores.map( function (score){
-				// need a gt$ to ensure a non null score?
-				var fastest = Scores.findOne(
-						{stage_id:score.stage_id, 
-							state:SSState.done,
-//							code:{$exists:false}, // ie OK
-							rawTime:{$exists:true}, // only exist it valid time
-							}, 
-						{sort:{rawTime:-1}});
-				var slowest = Scores.findOne(
-						{stage_id:score.stage_id, 
-							state:SSState.done,
-//							code:{$exists:false}, // ie OK
-							rawTime:{$exists:true}, // only exist it valid time
-							}, 
-						{sort:{rawTime:1}});
-				Meteor._debug("maybeupdatescore", score, slowest, fastest);
-
-				if(slowest && fastest){
-					var s = calcScore(score, slowest, fastest);
-					if(s !== score.score){
-						Meteor._debug("updatescore", score, slowest, fastest);
-						Meteor._debug("updatescore", s, slowest.rawTime, fastest.rawTime);
-						Scores.update(score._id, {
-							$set:{score:s,},});
-					}
-
-			});
-		}
-	});
+	Deps.autorun(reactiveScoreUpdater);
 });
+
+
+function reactiveScoreUpdater(){
+	Meteor._debug("maybeupdatescore");
+
+	// Need to calc score in a REACTIVE function to pick up new slowest and fastest times...
+	// OR do it on load?
+	var scores = Scores.find(
+			{state:SSState.done,});
+
+	scores.map( function (score){
+		// need a gt$ to ensure a non null score?
+		// only exist it valid time
+		var fastest = Scores.findOne(
+				{	stage_id:score.stage_id, 
+					state:SSState.done,
+					rawTime:{$exists:true}}, 
+					{sort:{rawTime:-1}} );
+
+		var slowest = Scores.findOne(
+				{stage_id:score.stage_id, 
+					state:SSState.done,
+					rawTime:{$exists:true}, // only exist it valid time
+				}, 
+				{sort:{rawTime:1}});
+		Meteor._debug("maybeupdatescore", score, slowest, fastest);
+
+		if(slowest && fastest)
+		{
+			var s = calcScore(score, slowest, fastest);
+			if(s !== score.score){
+				Meteor._debug("updatescore", score, slowest, fastest);
+				Meteor._debug("updatescore", s, slowest.rawTime, fastest.rawTime);
+				Scores.update(score._id, {
+					$set:{score:s,},});
+			};
+		};
+	});
+}
