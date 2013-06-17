@@ -119,7 +119,7 @@ function onQueueEntrant(event, template){
 		entrant_id:entrantId,
 	});
 
-	Scores.update(score._id, {$set:{state:"queued", when:now}});
+	Scores.update(score._id, {$set:{state:SSState.queued, when:now}});
 	event.preventDefault();
 }
 
@@ -139,12 +139,12 @@ Template.stageReady.events({
 
 function getReadyNext(){
 	var stageId = Session.get('stage_id');
-	return getEntrantScore(stageId, ["queued", "starting"]);	
+	return getEntrantScore(stageId, [SSState.queued, SSState.starting]);	
 };
 
 function getReadyEntrantScores(){
 	var stageId = Session.get('stage_id');
-	return getEntrantScores(stageId, ["queued", "starting"], 1);
+	return getEntrantScores(stageId, [SSState.queued, SSState.starting], 1);
 };
 
 
@@ -161,7 +161,7 @@ function onGetReadyToStart(event, template){
 	// popup the modal dialog by putting the score into starting state...
 	var id = this.score._id;
 
-	Scores.update(id, {$set:{state:"starting"}});
+	Scores.update(id, {$set:{state:SSState.starting}});
 
 	Session.set('starter', true);
 
@@ -188,7 +188,7 @@ Template.starterDialog.show = function () {
 	var stageId = Session.get('stage_id');
 
 	var startingScores = Scores.find(
-			{stage_id:stageId,state:"starting"},
+			{stage_id:stageId,state:SSState.starting},
 			{sort:{when:1, number:1}});
 	var startingIds = [];
 	startingScores.map(function(score){ 
@@ -200,7 +200,7 @@ Template.starterDialog.show = function () {
 	// get was is still startable (because we hit start a bit later than some other timer)
 	var runningIds = [];
 	var runningScores = Scores.find(
-			{stage_id:stageId, state:"running"} );
+			{stage_id:stageId, state:SSState.running} );
 	runningScores.map(function(score){ 
 		runningIds.push(score._id);});
 
@@ -246,8 +246,7 @@ function onRunStart(event, template){
 	Timestamps.insert(ts);
 
 	Scores.update(id, {
-		$set:{state:"running"},
-//		$push: {rawStartTimes:{user:"TBA", time:startTime}},
+		$set:{state:SSState.running},
 	});
 
 	var starting = Session.get('startTimeNeeded') || [];
@@ -265,9 +264,9 @@ function onCancelStarting(event, template){
 	// then is a one way, (each client just cancels when they want?)
 	var id = this.score._id;
 
-	var score = Scores.findOne(id);//;, state:"running"}, {$set:{state:"queued"}});
-	if(score.state === "starting")
-		Scores.update(id, {$set:{state:"queued"}});
+	var score = Scores.findOne(id);
+	if(score.state === SSState.starting)
+		Scores.update(id, {$set:{state:SSState.queued}});
 
 	// still remove from popup!
 	var starting = Session.get('startTimeNeeded') || [];
@@ -283,7 +282,6 @@ function onNotStarter(event, template){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Running
 
-//Template.stageRunning.stage = Rt.stage;
 Template.stageRunning.entrantScores = getRunningEntrantScores;
 
 Template.stageRunning.events({
@@ -293,14 +291,14 @@ Template.stageRunning.events({
 
 function getRunningEntrantScores(){
 	var stageId = Session.get('stage_id');
-	return getEntrantScores(stageId, ["running","finishing"]);
+	return getEntrantScores(stageId, [SSState.running,SSState.finishing]);
 };
 
 function onGetReadyToFinish(event, template){
 	Meteor._debug("onGetReadyToFinish", this, template);
 	// popup the modal dialog by putting the score into starting state...
 	var id = this.score._id;
-	Scores.update(id, {$set:{state:"finishing"}});
+	Scores.update(id, {$set:{state:SSState.finishing}});
 
 	Session.set('finisher', true);
 
@@ -327,23 +325,8 @@ Template.finisherDialog.show = function () {
 	if (! Session.get('finisher'))
 		return false;
 
-//	return true;
 	return getFinisherEntrantScores().length;
-//	var stageId = Session.get('stage_id');
-//	var scores = Scores.find({stage_id:stageId, state:"finishing"}).fetch();
-//	var hasScores = scores.length;
-
-	return hasScores;
 };
-
-//CONSTANTS/
-//SS={ FINISHED:"finished"};
-//var strset = require("./enums");
-//var color = new enums.Enum("red", "green", "blue");
-
-//var SSState = new enums.Enum(
-
-//yarp... NOT mongo friendly... so try...
 
 function getFinisherEntrantScores(){
 
@@ -371,12 +354,11 @@ function getFinisherEntrantScores(){
 };
 
 function onRunStopLater(event, template){
-//	Session.set('starter', null);
 	Meteor._debug("onRunStopLater", this, template);
 	// popup the modal dialog by putting the score into starting state...
 	var id = this.score._id;
 	Scores.update(id, {
-		$set:{state:"running"},
+		$set:{state:SSState.running},
 	});
 }
 
@@ -393,7 +375,7 @@ function onRunStop(event, template){
 	Timestamps.insert(ts);
 
 	Scores.update(id, {
-		$set:{state:"finished"},
+		$set:{state:SSState.finished},
 	});
 
 	var starting = Session.get('finishTimeNeeded') || [];
@@ -420,13 +402,13 @@ Template.stageScore.events({
 
 function getFinishedEntrantScores(){
 	var stageId = Session.get('stage_id');
-	return getEntrantScores(stageId, ["finished"], 1);
+	return getEntrantScores(stageId, [SSState.finished], 1);
 };
 
 function getFinishedEntrantScore(){
 	var stageId = Session.get('stage_id');
 
-	var es = getEntrantScore(stageId, ["finished"]);
+	var es = getEntrantScore(stageId, [SSState.finished]);
 	if (! es.score)
 		return null;
 
@@ -579,7 +561,6 @@ function getDoneEntrantScores(){
 //helper to break down the penalty map to a name value list.
 //more recent Handlebars can apparently do this built in {{@key}}
 Template.stageDone.penaltyList = function(arg){
-//	_.map({one : 1, two : 2, three : 3}, function(num, key){ return num * 3; });
 	var meh = _.map(arg, function(val, key, list){ 
 		return {'key':key, 'val':val};}
 	);
