@@ -61,10 +61,25 @@ function getEntrantScore(stageId, states, sort){
 ///////////////////////////////////
 //Overall Stage Page. (nav/admin)
 
+Template.runStage.stage = function(){
+	var stageId = Session.get('stage_id');
+	return Stages.findOne(stageId);
+};
+
+Template.runStage.race = function(){
+	var id = Session.get('race_id');
+	return Races.findOne(id);
+};
+
 Template.runStage.events({
 	"click .openStage": onOpenStage,
+	'click h1': onClosePage,
 });
 
+function onClosePage(){
+	Session.set('race_id', null);
+	Rt.goTo("pickRace");
+}
 
 //on click handler.
 //Passes to a Meteor.call (for when we lock down collections!)

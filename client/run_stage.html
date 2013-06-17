@@ -3,20 +3,21 @@
 {{> starterDialog}}
 {{> finisherDialog}}
 
-<h1>RaceT<sub>i</sub>me Timing {{stage.name}}</h1>
-<button class=" btn openStage">Open Stage</button>
-<button class=" btn closeStage">Close Stage</button>
-
-<h3>Pick Next</h3>
-	{{>stageFindNext}}
-<h3><i class="icon-road"/> Ready to start</h3>
-	{{>stageReady}}
-<h3><i class="icon-time"/> Running now</h3>
-	{{>stageRunning}}
-<h3><i class="icon-wrench"/> Confirm score</h3>
-	{{>stageScore}}
-<h3><i class="icon-list"/> Done</h3>
+<h1><a href="#">{{race.name}}</a> Stage {{stage.number}}:{{stage.name}}</h1>
+{{#unless stage.state}} 
+	<button class=" btn openStage">Open Stage</button> 
+{{else}}
+	<h3>Pick Next</h3>
+		{{>stageFindNext}}
+	<h3><i class="icon-road"/> Ready to start</h3>
+		{{>stageReady}}
+	<h3><i class="icon-time"/> Running now</h3>
+		{{>stageRunning}}
+	<h3><i class="icon-wrench"/> Confirm score</h3>
+		{{>stageScore}}
+	<h3><i class="icon-list"/> Done</h3>
 	{{>stageDone}}
+{{/unless}}
 </div>
 </template>
 
