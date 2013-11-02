@@ -1,23 +1,78 @@
-//Note do not use forms.  It makes more work as you just have to override more stuff (i.e. keystrokes!)
-var Todos = new Meteor.Collection(null);  // will not work if you pass the name.
-
-
-Template.raceSubmit.events({
-	'click .save':onSave,
+Template.newRace.events({
+    'submit ':onNewRace,
+    'click .save':onNewRace,
 	'click .cancel':onCancel,
-	'click .clear':onClear,
 });
 
 function onCancel(event) {
-	Meteor._debug('loggy cancel', this, event);
+	Meteor._debug('cancel', this, event);
 	Rt.goTo("pickRace");
 }
 
-function onClear(event) {
-	Todos.remove({});
-//	Meteor._debug('loggy cancel', this, event);
-//	Rt.goTo("pickRace");
+function onNewRace(event, template) {
+    event.preventDefault();
+
+    var name = template.find("#name").value;
+//	var name = $(event.target).find('[name=name]').val();
+    Meteor._debug('onNewRace', name, event, template, $(event.target), $(event.target).find('[name=name]'));
+    //$('#myform').
+    Meteor._debug(event.target);
+    Meteor._debug(template.find("#name").value);
+    if (! name )
+	{
+		throwError("Enter a race name");
+		return;
+	}
+
+	var race_id = Races.insert({name: name});
+	Session.set('race_id', race_id);
+	Rt.goTo('editRace');
+};
+
+
+
+Template.raceEdit.events(okCancelEvents(
+    	'#racename',
+		{
+			ok: function (text, evt) {
+				Meteor._debug("update", evt.target.value);
+				var id = this._id;
+                Races.update(id, {name: text});
+				evt.target.value = '';
+                Session.set("editing", null);
+			},
+            cancel: function (text, evt) {
+                Session.set("editing", null);
+			},
+		}));
+
+
+Template.raceEdit.race = function(){
+    var id = Session.get("race_id");
+    Meteor._debug("raceEdit", id);
+    
+    return Races.findOne(id);
 }
+
+Template.raceEdit.events({
+	'click .save':onSave,
+	'click .cancel':onCancel,
+    'click h2':onEditName,
+});
+
+Template.raceEdit.editing = function(event, template){
+    return Session.get("editing") === "editname";
+}
+
+function onEditName(event, template) {
+    Session.set("editing", "editname");
+    Deps.flush(); // force DOM redraw, so we can focus the edit field
+    var ctl = template.find("#racename")
+    Meteor._debug('onEditName', this, event, ctl);
+    activateInput(ctl);    
+}
+
+
 
 function onSave(event, template) {
 	loggy(event, template);
@@ -38,18 +93,7 @@ function onSave(event, template) {
 };
 
 
-
-//////////Todos //////////
-
-//Template.todos.loading = function () {
-//return todosHandle && !todosHandle.ready();
-//};
-
-//Use a local data source while creating.
-//This is so can validate the bunch.
-//Todos =  new Meteor.Collection("newRace");
-
-Template.todos.events(okCancelEvents(
+Template.raceEdit.events(okCancelEvents(
 		'#new-todo',
 		{
 			ok: function (text, evt) {
@@ -65,9 +109,7 @@ Template.todos.events(okCancelEvents(
 			}
 		}));
 
-Template.todos.todos = function () {
-	return Todos.find();
-};
+
 
 Template.todo_item.editing = function () {
 	return Session.equals('editing_itemname', this._id);

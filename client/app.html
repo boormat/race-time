@@ -11,9 +11,18 @@
 
 <template name="page">
     {{> errors}}
+    page={{pageName}}
     
 	{{#if showRaceSubmit}}
     	{{> raceSubmit}}
+  	{{/if}}
+
+    {{#if showNewRace}}
+    	{{> newRace}}
+  	{{/if}}
+      
+    {{#if showRaceEdit}}
+    	{{> raceEdit}}
   	{{/if}}
 
 	{{#if showRacePicker}}

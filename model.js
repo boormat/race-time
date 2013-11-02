@@ -9,7 +9,11 @@
 /**
 Race (Aka Event, Meet)
 	name:  name of event
+    
+    codes:  list of non-finishing result codes {name:WD, when:[start], score:{"min(SLOWEST+10, FASTEST*2)"}}
+    penalties:  list of penalties.  e.g: {name:flags, max:1, min:0, score:5.0, desc:"Blah Blah"}
 */
+
 Races = new Meteor.Collection("races");
 
 

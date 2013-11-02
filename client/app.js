@@ -27,11 +27,20 @@ Rt.goTo = function goToF(pageName){
 	return Session.set('page', pageName);
 };
 
+Template.page.pageName = function(){
+    return Session.get('page');
+};
 
+Template.page.showNewRace = function(){
+    return Session.get('page') === "newRace";
+};
 
+Template.page.showRaceEdit = function(){
+    return Session.get('page') === "raceEdit";
+};
 
 Template.page.showRaceSubmit = function(){
-	return Session.get('page') === "newRace";
+	return Session.get('page') === "MEH";
 };
 
 Template.page.showResults = function(){

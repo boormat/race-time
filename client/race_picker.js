@@ -11,6 +11,7 @@ Template.racePicker.show = function () {
 
 Template.racePicker.events({
 	'click .newRace':onCreateRace,
+    'click .editRace': onEditRace,
 	'click .runStage': onRunStage,
 });
 
@@ -41,6 +42,14 @@ function onRunStage(event, template)
 	Session.set("stage_id", this._id);
 
 	Rt.goTo("runStage");
+    event.preventDefault();
+};
+
+function onEditRace(event, template)
+{
+    Meteor._debug("Clicky", this, this._id);
+    Session.set("race_id", this._id);
+	Rt.goTo("raceEdit");
     event.preventDefault();
 };
 
