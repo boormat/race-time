@@ -5,55 +5,63 @@ Rt = {};
 // WARNING do not use event as a global name, it collides confusingly
 // with a javascript/meteor(?) event.
 Rt.race = function raceF() {
-	  return Races.findOne(Session.get('race_id'));
+	return Races.findOne(Session.get('race_id'));
 };
 
 Rt.stages = function stagesF() {
-	  return Stages.find(
-		{ race_id:Session.get('race_id')},
-		{sort:{number:1, name:1}});
+	return Stages.find({
+		race_id: Session.get('race_id')
+	}, {
+		sort: {
+			number: 1,
+			name: 1
+		}
+	});
 };
 
 Rt.stage = function stagesF() {
-	  return Stages.findOne({stage_id:Session.get('stage_id')});
+	return Stages.findOne({
+		stage_id: Session.get('stage_id')
+	});
 };
 
 Rt.entrants = function entrantsF() {
-	  return Entrants.find({race_id:Session.get('race_id')});
+	return Entrants.find({
+		race_id: Session.get('race_id')
+	});
 };
 
-Rt.goTo = function goToF(pageName){
+Rt.goTo = function goToF(pageName) {
 	//TODO check is valid... or use a router!
 	return Session.set('page', pageName);
 };
 
-Template.page.pageName = function(){
-    return Session.get('page');
-};
+Template.page.helpers( {
+	pageName: function() {
+		return Session.equals('page', undefined) ? 'blank' : Session.get('page');
+	},
 
-Template.page.showNewRace = function(){
-    return Session.get('page') === "newRace";
-};
+	showNewRace: function() {
+		return Session.equals('page', "newRace");
+	},
 
-Template.page.showRaceEdit = function(){
-    return Session.get('page') === "raceEdit";
-};
+	showRaceEdit: function() {
+		return Session.equals('page',  "raceEdit");
+	},
 
-Template.page.showRaceSubmit = function(){
-	return Session.get('page') === "MEH";
-};
+	showRaceSubmit: function() {
+		return Session.equals('page', "MEH");
+	},
 
-Template.page.showResults = function(){
-	return Session.get('page') === "results";
-//	return 1;
-};
+	showResults: function() {
+		return Session.equals('page', "results");
+	},
 
-Template.page.showRacePicker = function(){
-	return !Session.get('page') || Session.get('page') === "pickRace";
-};
+	showRacePicker: function() {
+		return Session.equals('page', undefined) || Session.equals('page', "pickRace");
+	},
 
-Template.page.runStage = function(){
-	return Session.get('page') === "runStage";
-};
-
-
+	runStage: function() {
+		return Session.equals('page', "runStage");
+	}
+});

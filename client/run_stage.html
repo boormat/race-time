@@ -1,5 +1,6 @@
 <template name="runStage">
 <div>
+	Yolo
 {{> starterDialog}}
 {{> finisherDialog}}
 
@@ -9,13 +10,13 @@
 {{else}}
 	<h3>Pick Next</h3>
 		{{>stageFindNext}}
-	<h3><i class="icon-road"/> Ready to start</h3>
+	<h3><i class="icon-road"></i> Ready to start</h3>
 		{{>stageReady}}
-	<h3><i class="icon-time"/> Running now</h3>
+	<h3><i class="icon-time"></i> Running now</h3>
 		{{>stageRunning}}
-	<h3><i class="icon-wrench"/> Confirm score</h3>
+	<h3><i class="icon-wrench"></i> Confirm score</h3>
 		{{>stageScore}}
-	<h3><i class="icon-list"/> Done</h3>
+	<h3><i class="icon-list"></i>Done</h3>
 	{{>stageDone}}
 {{/unless}}
 </div>
@@ -37,7 +38,7 @@
 <table>
 	<tr>
 		<td>{{>entrantLabel entrant}}</td>
-		<td><button class=" btn btn-danger getReady"><i class="icon-time"/> Starting...</button></td>
+		<td><button class=" btn btn-danger getReady"><i class="icon-time"></i> Starting...</button></td>
 		<td><button class=" btn dequeue">Later</button></td>
 		<td><button class=" btn ">DNS</button></td>
 		<td><button class=" btn ">Show me class list so can change if required.</button></td>
@@ -54,7 +55,7 @@
 	{{#each entrantScores}}
 		<tr>
 		<td>{{>entrantLabel entrant}}</td>
-		<td><button class=" btn btn-danger getReady"><i class="icon-time"/>Finishing...</button></td>
+		<td><button class=" btn btn-danger getReady"><i class="icon-time"></i>Finishing...</button></td>
 		</tr>
 	{{/each}}
 </table>
@@ -66,7 +67,7 @@
 
 <template name="starterDialog">
 {{#if show}}
-<div class="mask"/>
+<div class="mask"></div>
 <div class="modal">
 	<div class="modal-header">
 		<button type="button" class="close done">&times;</button>
@@ -77,7 +78,7 @@
 		<div class="invite-row">
 		<h3>Starter Ready...</h3>
 		<h1>0:00:00{{>entrantLabel entrant}}</h1>
-			<a href="#" class="btn btn-primary now"><i class="icon-time" />Go</a>
+			<a href="#" class="btn btn-primary now"><i class="icon-time"></i>Go</a>
 			<a href="#" class="btn cancel done">Cancel Start</a>
 		</div>
 		{{/each}}
@@ -94,7 +95,7 @@
 
 <template name="finisherDialog">
 {{#if show}}
-<div class="mask"/>
+<div class="mask"></div>
 <div class="modal">
 	<div class="modal-header">
 		<button type="button" class="close done">&times;</button>
@@ -105,7 +106,7 @@
 		<div class="invite-row">
 		<h3>Starter Ready...</h3>
 		<h1>0:00:00{{>entrantLabel entrant}}</h1>
-			<a href="#" class="btn btn-primary now"><i class="icon-time" />Stop</a>
+			<a href="#" class="btn btn-primary now"><i class="icon-time"></i>Stop</a>
 			<a href="#" class="btn cancel done">Later</a>
 		</div>
 		{{/each}}
@@ -152,11 +153,11 @@
 		{{/each}}
 		</ul>
 		{{#if timeSet}}
-			{{time}}<p>
+			{{time}}<br>
 		{{else}}
 			<input type="text" class="time" id="time" 
 				placeholder="Manual time overide ... SHow when no Start Stop times OR they are all struck out!"
-				value="{{time}}">
+				value="{{time}}"/>
 		{{/if}}
 
 		<button class=" btn btn-primary save">Save</button>
@@ -184,7 +185,7 @@
 			<span class="number badge">{{key}} {{val}}</span>
 			{{/each}}
 		</td>
-		<td><a><i class="icon-wrench edit"/></a></td>
+		<td><a><i class="icon-wrench edit"></i></a></td>
 		</tr>
 	{{/each}}
 </table>

@@ -1,41 +1,37 @@
-
 <template name="results">
-<div>
-	<h1><a href="#">{{race.name}}</a> Results</h1>
-<!-- 		<ul>
+	<div>
+		<h1><a href="#">{{race.name}}</a> Results</h1>
+		<!-- 		<ul>
 		<li>Results</li>
 		<li>Stages</li>
 		<li>Entrants</li>
 		</ul>
  -->
-    <table>
-		<thead>
-			<tr>
-				<th align="left">Entrant</th>
-				<th align="left">Full Name</th>
-				<th align="left">Pos</th> 
-				{{#each stages }}
+		<table>
+			<thead>
+				<tr>
+					<th align="left">Entrant</th>
+					<th align="left">Full Name</th>
+					<th align="left">Pos</th>
+					{{#each stages }}
 					<th>{{name}}</th>
-				{{/each}}
-				<th>Total</th>
-			</tr>
-		</thead>
-		<tbody>
-			{{#each results }}
+					{{/each}}
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each results }}
 				<tr>A result
 					<td>{{>entrantLabel this}}</td>
-					<td align="left">{{name}}</th>
-					<td align="right">{{position.name}}</td>
-					{{#each scores}}
+					<td align="left">{{name}}</td>
+						<td align="right">{{position.name}}</td>
+						{{#each scores}}
 						<td align="right">{{this}}</td>
-					{{/each}}
-					<td align="right">{{total}}</td>
+						{{/each}}
+						<td align="right">{{total}}</td>
 				</tr>
-			{{/each}}
-		</tbody>
-	</table>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
 </template>
-
-
-
-	

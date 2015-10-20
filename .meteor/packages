@@ -5,8 +5,11 @@
 
 autopublish
 insecure
-preserve-inputs
 bootstrap
 logging
 handlebars
 standard-app-packages
+standard-minifiers
+ground:db
+appcache
+kadira:debug

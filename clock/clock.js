@@ -3,7 +3,7 @@ if (Meteor.isClient) {
 		
 		function setServerTime(){
 			//get server time (it's in milliseconds)
-			Meteor.call("getServerTime", function (error, result) {
+			Meteor.call("ktgetServerTime", function (error, result) {
 
 				//get client time in milliseconds
 				localTime = new Date().getTime();
@@ -50,7 +50,7 @@ if (Meteor.isServer) {
 	Meteor.methods({
 
 		//get server time in milliseconds
-		getServerTime: function () {
+		ktgetServerTime: function () {
 			var _time = (new Date).getTime();
 			Meteor._debug(_time);
 			return _time;

@@ -1,24 +1,35 @@
+/* global Rt Stages Races */
+
+
 //////////////////////////
 // Race Picker.
 // Add a search later by club too :-)
-Template.racePicker.raceList = function () {
-	return Races.find({}, {});
-};
+Template.racePicker.helpers({
+	raceList: function() {
+		return Races.find({}, {});
+	},
 
-Template.racePicker.show = function () {
-	return !Rt.race();
-};
+	show: function() {
+		return !Rt.race();
+	},
+	raceStages: function(race_id) {
+		return Stages.find({
+			race_id: race_id
+		}, {
+			sort: {
+				number: 1,
+				name: 1
+			}
+		});
+	}
+});
 
 Template.racePicker.events({
-	'click .newRace':onCreateRace,
-    'click .editRace': onEditRace,
+	'click .newRace': onCreateRace,
+	'click .editRace': onEditRace,
 	'click .runStage': onRunStage,
 });
 
-Template.racePicker.raceStages = function (race_id) {
-	  return Stages.find({race_id:race_id},
-				{sort:{number:1, name:1}});
-};
 
 
 //////// 
@@ -27,37 +38,33 @@ Template.racePickerItem.events({
 });
 
 
-function onPickRace(event, template)
-{
+function onPickRace(event, template) {
 	Session.set("race_id", this._id);
 	Rt.goTo("results");
-    event.preventDefault();
+	event.preventDefault();
 };
 
-function onRunStage(event, template)
-{
+function onRunStage(event, template) {
 	Meteor._debug("onRunStage", this.race_id, this._id);
-	
+
 	Session.set("race_id", this.race_id);
 	Session.set("stage_id", this._id);
 
 	Rt.goTo("runStage");
-    event.preventDefault();
+	event.preventDefault();
 };
 
-function onEditRace(event, template)
-{
-    Meteor._debug("Clicky", this, this._id);
-    Session.set("race_id", this._id);
+function onEditRace(event, template) {
+	Meteor._debug("Clicky", this, this._id);
+	Session.set("race_id", this._id);
 	Rt.goTo("raceEdit");
-    event.preventDefault();
+	event.preventDefault();
 };
 
-function onCreateRace(event, template)
-{
+function onCreateRace(event, template) {
 	Meteor._debug("Clicky", event);
 	Meteor._debug("Clicky", template);
 	Session.set("race_id", null);
 	Rt.goTo("newRace");
-    event.preventDefault();
+	event.preventDefault();
 };
