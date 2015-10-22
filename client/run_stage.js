@@ -29,7 +29,7 @@ function getEntrantScores(stageId, states, skipCount, sort) {
 	});
 
 	var ess = []; // list of Entrant and Score
-	scores.forEach(function(score) {
+	scores.forEach(function (score) {
 		var es = {};
 		Meteor._debug("score", score);
 		es.score = score;
@@ -46,7 +46,7 @@ function scoresToEntrantScores(scores) {
 	Meteor._debug("scoresToEntrantScores", scores);
 
 	var ess = []; // list of Entrant and Score
-	_.forEach(scores, function(score) {
+	_.forEach(scores, function (score) {
 		Meteor._debug("scoresToEntrantScores", scores, score);
 
 		var es = {};
@@ -89,12 +89,12 @@ function getEntrantScore(stageId, states, sort) {
 //Overall Stage Page. (nav/admin)
 
 Template.runStage.helpers({
-	stage: function() {
+	stage: function () {
 		var stageId = Session.get('stage_id');
 		return Stages.findOne(stageId);
 	},
 
-	race: function() {
+	race: function () {
 		var id = Session.get('race_id');
 		return Races.findOne(id);
 	}
@@ -123,7 +123,7 @@ function onOpenStage(event, template) {
 //Stage Find Next Entrants
 //entrants who have not done stage...
 Template.stageFindNext.helpers({
-	pendingEntrants: function() {
+	pendingEntrants: function () {
 		// stage id should maybe a template parameter! (do not use globals in sub-templates!)
 		var stageId = Session.get('stage_id');
 		return getEntrantScores(stageId, [0], 0, {
@@ -166,12 +166,12 @@ function onQueueEntrant(event, template) {
 Template.stageReady.helpers({
 	// entrants: getReadyEntrantScores,
 	// next: getReadyNext
-	entrants: function() {
+	entrants: function () {
 		var stageId = Session.get('stage_id');
 		return getEntrantScores(stageId, [SSState.queued, SSState.starting], 1);
 	},
 
-	next: function() {
+	next: function () {
 		var stageId = Session.get('stage_id');
 		return getEntrantScore(stageId, [SSState.queued, SSState.starting]);
 	}
@@ -226,7 +226,55 @@ function onGetReadyToStart(event, template) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage starterDialog
-Template.starterDialog.entrantScores = getStarterEntrantScores;
+Template.starterDialog.helpers({
+	entrantScores: getStarterEntrantScores,
+	show: function () {
+		Session.setDefault('starter', true);
+		if (!Session.get('starter'))
+			return false;
+
+		var stageId = Session.get('stage_id');
+
+		var startingScores = Scores.find({
+			stage_id: stageId,
+			state: SSState.starting
+		}, {
+			sort: {
+				when: 1,
+				number: 1
+			}
+		});
+		var startingIds = [];
+		startingScores.map(function (score) {
+			startingIds.push(score._id);
+		});
+
+		Session.setDefault('startTimeNeeded', []);
+		var wasStarting = Session.get('startTimeNeeded');
+
+		// get was is still startable (because we hit start a bit later than some other timer)
+		var runningIds = [];
+		var runningScores = Scores.find({
+			stage_id: stageId,
+			state: SSState.running
+		});
+		runningScores.map(function (score) {
+			runningIds.push(score._id);
+		});
+
+		// Note attempt to keep insertion order to avoid screen resorts. (per client)
+		var startables = _.union(startingIds,
+			_.intersection(wasStarting, runningIds));
+
+		// filter out anything definately finished? Nah
+		Meteor._debug("starterDialog", wasStarting, startables, runningIds, startingIds);
+
+		//check to avoid a potential loop of death when I have a bug!
+		if (wasStarting !== startables)
+			Session.set('startTimeNeeded', startables);
+		return startables.length;
+	},
+});
 
 Template.starterDialog.events({
 	"click .now": onRunStart,
@@ -234,59 +282,13 @@ Template.starterDialog.events({
 	"click .notTimer": onNotStarter,
 });
 
-Template.starterDialog.show = function() {
-	Session.setDefault('starter', true);
-	if (!Session.get('starter'))
-		return false;
-
-	var stageId = Session.get('stage_id');
-
-	var startingScores = Scores.find({
-		stage_id: stageId,
-		state: SSState.starting
-	}, {
-		sort: {
-			when: 1,
-			number: 1
-		}
-	});
-	var startingIds = [];
-	startingScores.map(function(score) {
-		startingIds.push(score._id);
-	});
-
-	Session.setDefault('startTimeNeeded', []);
-	var wasStarting = Session.get('startTimeNeeded');
-
-	// get was is still startable (because we hit start a bit later than some other timer)
-	var runningIds = [];
-	var runningScores = Scores.find({
-		stage_id: stageId,
-		state: SSState.running
-	});
-	runningScores.map(function(score) {
-		runningIds.push(score._id);
-	});
-
-	// Note attempt to keep insertion order to avoid screen resorts. (per client)
-	var startables = _.union(startingIds,
-		_.intersection(wasStarting, runningIds));
-
-	// filter out anything definately finished? Nah
-	Meteor._debug("starterDialog", wasStarting, startables, runningIds, startingIds);
-
-	//check to avoid a potential loop of death when I have a bug!
-	if (wasStarting !== startables)
-		Session.set('startTimeNeeded', startables);
-	return startables.length;
-};
 
 function getStarterEntrantScores() {
 	var startTimeNeeded = Session.get('startTimeNeeded');
 
 
 	var ess = []; // list of Entrant and Score
-	_.each(startTimeNeeded, function(scoreId) {
+	_.each(startTimeNeeded, function (scoreId) {
 		var es = {};
 		es.score = Scores.findOne(scoreId);
 		es.entrant = Entrants.findOne(es.score.entrant_id);
@@ -352,7 +354,9 @@ function onNotStarter(event, template) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Running
 
-Template.stageRunning.entrantScores = getRunningEntrantScores;
+Template.stageRunning.helpers(
+entrantScores: getRunningEntrantScores,
+});
 
 Template.stageRunning.events({
 	//	"click .dequeue": onDequeueEntrant,
@@ -383,8 +387,18 @@ function onGetReadyToFinish(event, template) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Run Finishing Dialog
 
+Template.finisherDialog.helpers({
+	entrantScores: getFinisherEntrantScores,
+	show: function () {
+		Meteor._debug("finisherDialog", "show");
 
-Template.finisherDialog.entrantScores = getFinisherEntrantScores;
+		Session.setDefault('finisher', true);
+		if (!Session.get('finisher'))
+			return false;
+
+		return getFinisherEntrantScores().length;
+	}
+});
 
 Template.finisherDialog.events({
 	"click .now": onRunStop,
@@ -392,15 +406,6 @@ Template.finisherDialog.events({
 	"click .notTimer": onNotFinisher,
 });
 
-Template.finisherDialog.show = function() {
-	Meteor._debug("finisherDialog", "show");
-
-	Session.setDefault('finisher', true);
-	if (!Session.get('finisher'))
-		return false;
-
-	return getFinisherEntrantScores().length;
-};
 
 function getFinisherEntrantScores() {
 
@@ -476,11 +481,13 @@ function onNotFinisher(event, template) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Confirm Score
-//Template.stageScore.stage = Rt.stage;
-Template.stageScore.entrantScores = getFinishedEntrantScores;
-Template.stageScore.next = getFinishedEntrantScore;
-Template.stageScore.asTime = tsToMMss; // add as 'object' props on the TimeStamp coln?
-Template.stageScore.timestampClass = timestampClass;
+//stage = Rt.stage;
+Template.stageScore.helpers({
+	entrantScores: getFinishedEntrantScores;
+	next: getFinishedEntrantScore;
+	asTime: tsToMMss; // add as 'object' props on the TimeStamp coln?
+	timestampClass: timestampClass;
+});
 
 Template.stageScore.events({
 	"click .save": onScoreSave,
@@ -518,22 +525,22 @@ function getFinishedEntrantScore() {
 		}
 	});
 
-	var starts = _.reject(es.startTimes.fetch(), function(ts) {
+	var starts = _.reject(es.startTimes.fetch(), function (ts) {
 		return ts.ignore;
 	});
-	var stops = _.reject(es.stopTimes.fetch(), function(ts) {
+	var stops = _.reject(es.stopTimes.fetch(), function (ts) {
 		return ts.ignore;
 	});
 
 	Meteor._debug("times", starts, stops);
 
 	if (starts.length && stops.length) {
-		var startAvg = _.reduce(starts, function(memo, ts) {
+		var startAvg = _.reduce(starts, function (memo, ts) {
 			return memo + ts.ts;
 		}, 0);
 		startAvg /= starts.length;
 
-		var stopAvg = _.reduce(stops, function(memo, ts) {
+		var stopAvg = _.reduce(stops, function (memo, ts) {
 			return memo + ts.ts;
 		}, 0);
 		stopAvg /= stops.length;
@@ -640,9 +647,12 @@ function onPenalty(event, template) {
 	}
 }
 
-//Template.
-Template.toggleableTimestamp.asTime = tsToMMss; // add as 'object' props on the TimeStamp coln?
-Template.toggleableTimestamp.timestampClass = timestampClass;
+
+Template.toggleableTimestamp.helpers({
+	asTime: tsToMMss; // add as 'object' props on the TimeStamp coln?
+	timestampClass: timestampClass;
+});
+
 Template.toggleableTimestamp.events({
 	"click ": onToggleTimestamp,
 });
@@ -661,8 +671,21 @@ function onToggleTimestamp(event, template) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Stage Done   Archive.
 
-Template.stageDone.entrantScores = getDoneEntrantScores;
-Template.stageDone.stage = Rt.stage;
+Template.stageDone.helpers({
+	entrantScores: getDoneEntrantScores,
+	stage: Rt.stage,
+	penaltyList: function (arg) {
+		//helper to break down the penalty map to a name value list.
+		//more recent Handlebars can apparently do this built in {{@key}}
+		var meh = _.map(arg, function (val, key, list) {
+			return {
+				'key': key,
+				'val': val
+			};
+		});
+		return meh;
+	}
+});
 
 Template.stageDone.events({
 	"click .edit": onDoneUnsave,
@@ -674,17 +697,6 @@ function getDoneEntrantScores() {
 };
 
 
-//helper to break down the penalty map to a name value list.
-//more recent Handlebars can apparently do this built in {{@key}}
-Template.stageDone.penaltyList = function(arg) {
-	var meh = _.map(arg, function(val, key, list) {
-		return {
-			'key': key,
-			'val': val
-		};
-	});
-	return meh;
-};
 
 // revert a done score back to edit view
 function onDoneUnsave(event, template) {

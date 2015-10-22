@@ -1,14 +1,14 @@
 // Local (client-only) collection
 Errors = new Meteor.Collection(null);
 
-throwError = function(message) {
+throwError = function (message) {
   Errors.insert({
     message: message,
     seen: false
   });
 };
 
-clearErrors = function() {
+clearErrors = function () {
   Errors.remove({
     seen: true
   });
@@ -16,18 +16,19 @@ clearErrors = function() {
 
 
 Template.errors.helpers({
-  errors: function() {
+  errors: function () {
     return Errors.find();
-  }
+  },
+
+  rendered: function () {
+    var error = this.data;
+    Meteor.defer(function () {
+      Errors.update(error._id, {
+        $set: {
+          seen: true
+        }
+      });
+    });
+  },
 });
 
-Template.error.rendered = function() {
-  var error = this.data;
-  Meteor.defer(function() {
-    Errors.update(error._id, {
-      $set: {
-        seen: true
-      }
-    });
-  });
-};

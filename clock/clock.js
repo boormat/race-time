@@ -38,11 +38,6 @@ if (Meteor.isClient) {
 
 	});
 
-
-//	pass the clock to the HTML template
-//	Template.register.clock = function () {
-//		return new Date(Session.get("serverTime"));
-//	};
 }
 
 //server...
@@ -56,4 +51,4 @@ if (Meteor.isServer) {
 			return _time;
 		}
 	});
-}  
+}

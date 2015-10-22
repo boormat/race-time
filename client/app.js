@@ -36,32 +36,32 @@ Rt.goTo = function goToF(pageName) {
 	return Session.set('page', pageName);
 };
 
-Template.page.helpers( {
-	pageName: function() {
+Template.page.helpers({
+	pageName: function () {
 		return Session.equals('page', undefined) ? 'blank' : Session.get('page');
 	},
 
-	showNewRace: function() {
+	showNewRace: function () {
 		return Session.equals('page', "newRace");
 	},
 
-	showRaceEdit: function() {
-		return Session.equals('page',  "raceEdit");
+	showRaceEdit: function () {
+		return Session.equals('page', "raceEdit");
 	},
 
-	showRaceSubmit: function() {
+	showRaceSubmit: function () {
 		return Session.equals('page', "MEH");
 	},
 
-	showResults: function() {
+	showResults: function () {
 		return Session.equals('page', "results");
 	},
 
-	showRacePicker: function() {
+	showRacePicker: function () {
 		return Session.equals('page', undefined) || Session.equals('page', "pickRace");
 	},
 
-	runStage: function() {
+	runStage: function () {
 		return Session.equals('page', "runStage");
 	}
 });

@@ -75,7 +75,8 @@ function demo_data() {
 		}
 	}
 	
-//   STOP this now thanks.  Add a button to trigger? Meteor.setTimeout(addResults, 1000);
+//   STOP this now thanks.  Add a button to trigger? 
+	Meteor.setTimeout(addResults, 1000);
 };
 
 // Adds a random result to the demo races.  Do not run on prod!
